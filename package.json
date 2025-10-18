@@ -7,7 +7,14 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "localnet:setup": "node scripts/setup-localnet-mints.mjs",
+    "localnet:start": "node scripts/start-localnet.mjs",
+    "localnet:stop": "node scripts/stop-localnet.mjs",
+    "localnet:status": "node scripts/stop-localnet.mjs --status",
+    "localnet:airdrop": "node scripts/airdrop-tokens.mjs",
+    "localnet:reset": "npm run localnet:stop && npm run localnet:setup && npm run localnet:start",
+    "localnet:help": "echo 'Localnet Commands:' && echo '  setup   - Create mint accounts' && echo '  start   - Start validator' && echo '  stop    - Stop validator' && echo '  status  - Check status' && echo '  airdrop - Airdrop tokens' && echo '  reset   - Full reset'"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",

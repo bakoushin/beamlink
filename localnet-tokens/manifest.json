@@ -1,0 +1,72 @@
+[
+  {
+    "symbol": "SOL",
+    "name": "Wrapped SOL",
+    "address": "So11111111111111111111111111111111111111112",
+    "decimals": 9,
+    "mintAuthority": "JAvaBwUsZTzAeAQsUb4Vdrobiq9RFfKY1Vv9aNxhNmXX"
+  },
+  {
+    "symbol": "USDC",
+    "name": "USD Coin",
+    "address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "decimals": 6,
+    "mintAuthority": "JAvaBwUsZTzAeAQsUb4Vdrobiq9RFfKY1Vv9aNxhNmXX"
+  },
+  {
+    "symbol": "USDT",
+    "name": "USDT",
+    "address": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+    "decimals": 6,
+    "mintAuthority": "JAvaBwUsZTzAeAQsUb4Vdrobiq9RFfKY1Vv9aNxhNmXX"
+  },
+  {
+    "symbol": "BONK",
+    "name": "BONK",
+    "address": "6dhTynDkYsVM7cbF7TKfC9DWB636TcEM935fq7JzL2ES",
+    "decimals": 9,
+    "mintAuthority": "JAvaBwUsZTzAeAQsUb4Vdrobiq9RFfKY1Vv9aNxhNmXX"
+  },
+  {
+    "symbol": "WIF",
+    "name": "dogwifcoin",
+    "address": "Coq3LbB52jzCxk5W8SJTyK3SB83sYTKEjs2JmHaoSGxS",
+    "decimals": 9,
+    "mintAuthority": "JAvaBwUsZTzAeAQsUb4Vdrobiq9RFfKY1Vv9aNxhNmXX"
+  },
+  {
+    "symbol": "ORCA",
+    "name": "Orca",
+    "address": "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE",
+    "decimals": 6,
+    "mintAuthority": "JAvaBwUsZTzAeAQsUb4Vdrobiq9RFfKY1Vv9aNxhNmXX"
+  },
+  {
+    "symbol": "RAY",
+    "name": "Raydium",
+    "address": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
+    "decimals": 6,
+    "mintAuthority": "JAvaBwUsZTzAeAQsUb4Vdrobiq9RFfKY1Vv9aNxhNmXX"
+  },
+  {
+    "symbol": "MNGO",
+    "name": "Mango",
+    "address": "MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac",
+    "decimals": 6,
+    "mintAuthority": "JAvaBwUsZTzAeAQsUb4Vdrobiq9RFfKY1Vv9aNxhNmXX"
+  },
+  {
+    "symbol": "mSOL",
+    "name": "Marinade staked SOL",
+    "address": "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
+    "decimals": 9,
+    "mintAuthority": "JAvaBwUsZTzAeAQsUb4Vdrobiq9RFfKY1Vv9aNxhNmXX"
+  },
+  {
+    "symbol": "stSOL",
+    "name": "Lido staked SOL",
+    "address": "7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj",
+    "decimals": 9,
+    "mintAuthority": "JAvaBwUsZTzAeAQsUb4Vdrobiq9RFfKY1Vv9aNxhNmXX"
+  }
+]
