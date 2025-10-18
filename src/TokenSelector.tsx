@@ -40,7 +40,6 @@ export function TokenSelector({
 }: TokenSelectorProps) {
   const { connection } = useConnection();
   const { publicKey } = useWallet();
-  const [showAllTokens, setShowAllTokens] = React.useState(false);
   const [internalOpen, setInternalOpen] = React.useState(false);
 
   // Fetch top tokens (always)
@@ -50,7 +49,7 @@ export function TokenSelector({
 
   // Fetch user balances (only when wallet is connected)
   const { data: userBalances, isLoading: isLoadingBalances } = useQuery(
-    userTokenBalancesQueryOptions(connection, publicKey, showAllTokens)
+    userTokenBalancesQueryOptions(connection, publicKey, true)
   );
 
   // Determine which data to use
@@ -62,12 +61,9 @@ export function TokenSelector({
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = controlledOnOpenChange || setInternalOpen;
 
-  // Reset showAllTokens when closing the modal
+  // Handle modal open/close
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
-    if (!newOpen) {
-      setShowAllTokens(false);
-    }
   };
 
   // Handle token selection
@@ -98,8 +94,6 @@ export function TokenSelector({
         <BalancesList
           balances={userBalances}
           isLoading={isLoading}
-          showAllTokens={showAllTokens}
-          onShowAllTokens={() => setShowAllTokens(true)}
           onTokenSelect={handleTokenSelect}
         />
       ) : (
@@ -256,14 +250,10 @@ function TokenItem({
 function BalancesList({
   balances,
   isLoading,
-  showAllTokens,
-  onShowAllTokens,
   onTokenSelect,
 }: {
   balances: UserTokenBalance[];
   isLoading?: boolean;
-  showAllTokens: boolean;
-  onShowAllTokens: () => void;
   onTokenSelect?: (balance: UserTokenBalance) => void;
 }) {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -327,18 +317,6 @@ function BalancesList({
                     onSelect={onTokenSelect}
                   />
                 ))}
-                {!showAllTokens && (
-                  <div className="flex justify-center pt-2 pb-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={onShowAllTokens}
-                      className="text-sm"
-                    >
-                      Show all tokens
-                    </Button>
-                  </div>
-                )}
               </>
             ) : balances.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
