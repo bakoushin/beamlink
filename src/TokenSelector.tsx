@@ -167,16 +167,13 @@ function TokenList({
           </button>
         )}
       </div>
-      <div
-        className="overflow-y-auto flex-1"
-        style={{ maxHeight: "calc(80vh - 180px)" }}
-      >
+      <div className="overflow-y-auto flex-1">
         {isLoading ? (
           <div className="text-center text-muted-foreground py-8">
             Loading tokens...
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col">
             {filteredTokens.length > 0 ? (
               filteredTokens.map((token) => (
                 <TokenRow
@@ -224,61 +221,69 @@ function TokenRow({
   };
 
   return (
-    <Item size="sm" asChild>
-      <Button
-        className="w-full text-left hover:bg-accent h-14 px-0"
-        onClick={handleClick}
-      >
-        <ItemMedia variant="image">
-          <div className="relative w-10 h-10">
-            {/* Show fallback icon until image loads or if there's an error */}
-            {(!imageLoaded || imageError || !tokenIcon) && (
-              <div className="absolute inset-0 rounded-full bg-muted flex items-center justify-center">
-                <Coins className="h-5 w-5 text-muted-foreground" />
-              </div>
-            )}
-            {/* Load image in background */}
-            {tokenIcon && !imageError && (
-              <img
-                src={tokenIcon}
-                alt={tokenName}
-                className={`rounded-full w-10 h-10 ${
-                  imageLoaded ? "opacity-100" : "opacity-0"
-                }`}
-                onLoad={() => setImageLoaded(true)}
-                onError={() => setImageError(true)}
-              />
-            )}
-          </div>
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle className="text-foreground">{tokenSymbol}</ItemTitle>
-          <ItemDescription className="font-mono text-xs">
-            {tokenAddress.slice(0, 4)}...{tokenAddress.slice(-4)}
-          </ItemDescription>
-        </ItemContent>
-        <ItemContent className="items-end">
-          {hasBalance ? (
-            <>
-              <ItemTitle className="text-foreground">
-                {formatTokenBalance(userBalance.balance)}
-              </ItemTitle>
-              <ItemDescription>
-                {userBalance.usdValue !== null
-                  ? formatPrice(userBalance.usdValue)
-                  : "—"}
-              </ItemDescription>
-            </>
-          ) : (
-            <>
-              <ItemTitle></ItemTitle>
-              <ItemDescription className="text-muted-foreground">
-                {formatPrice(token.usdPrice)}
-              </ItemDescription>
-            </>
+    <Item
+      size="sm"
+      className="cursor-pointer hover:bg-accent/50 focus-visible:bg-accent/50 -mx-4 py-1"
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+      tabIndex={0}
+      role="button"
+      aria-label={`Select ${tokenName} (${tokenSymbol})`}
+    >
+      <ItemMedia variant="image">
+        <div className="relative w-10 h-10">
+          {/* Show fallback icon until image loads or if there's an error */}
+          {(!imageLoaded || imageError || !tokenIcon) && (
+            <div className="absolute inset-0 rounded-full bg-muted flex items-center justify-center">
+              <Coins className="h-5 w-5 text-muted-foreground" />
+            </div>
           )}
-        </ItemContent>
-      </Button>
+          {/* Load image in background */}
+          {tokenIcon && !imageError && (
+            <img
+              src={tokenIcon}
+              alt={tokenName}
+              className={`rounded-full w-10 h-10 ${
+                imageLoaded ? "opacity-100" : "opacity-0"
+              }`}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageError(true)}
+            />
+          )}
+        </div>
+      </ItemMedia>
+      <ItemContent>
+        <ItemTitle className="text-foreground">{tokenSymbol}</ItemTitle>
+        <ItemDescription className="font-mono text-xs">
+          {tokenAddress.slice(0, 4)}...{tokenAddress.slice(-4)}
+        </ItemDescription>
+      </ItemContent>
+      <ItemContent className="items-end">
+        {hasBalance ? (
+          <>
+            <ItemTitle className="text-foreground">
+              {formatTokenBalance(userBalance.balance)}
+            </ItemTitle>
+            <ItemDescription>
+              {userBalance.usdValue !== null
+                ? formatPrice(userBalance.usdValue)
+                : "—"}
+            </ItemDescription>
+          </>
+        ) : (
+          <>
+            <ItemTitle></ItemTitle>
+            <ItemDescription className="text-muted-foreground">
+              {formatPrice(token.usdPrice)}
+            </ItemDescription>
+          </>
+        )}
+      </ItemContent>
     </Item>
   );
 }
