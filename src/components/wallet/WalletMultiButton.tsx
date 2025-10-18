@@ -1,20 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Button } from "@/components/ui/button";
-import {
-  ButtonGroup,
-  ButtonGroupSeparator,
-} from "@/components/ui/button-group";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Modal } from "@/components/Modal";
 import { ArrowRightLeft, LogOut, Copy, Check } from "lucide-react";
 import { useWalletModal } from "@/hooks/use-wallet-modal";
+import { useQuery } from "@tanstack/react-query";
+import { userTokenBalancesQueryOptions } from "@/queries/balances";
+import { useConnection } from "@solana/wallet-adapter-react";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface WalletMultiButtonProps {
   labels?: {
@@ -42,28 +37,18 @@ export function WalletMultiButton({
   },
 }: WalletMultiButtonProps) {
   const { publicKey, wallet, disconnect, connecting } = useWallet();
+  const { connection } = useConnection();
   const { setVisible } = useWalletModal();
   const [copied, setCopied] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  useEffect(() => {
-    const listener = (event: MouseEvent | TouchEvent) => {
-      const node = ref.current;
-
-      if (!node || node.contains(event.target as Node)) return;
-
-      setDropdownOpen(false);
-    };
-
-    document.addEventListener("mousedown", listener);
-    document.addEventListener("touchstart", listener);
-
-    return () => {
-      document.removeEventListener("mousedown", listener);
-      document.removeEventListener("touchstart", listener);
-    };
-  }, []);
+  // Fetch SOL balance
+  const { data: balances } = useQuery(
+    userTokenBalancesQueryOptions(connection, publicKey, false)
+  );
+  const solBalance =
+    balances?.find((balance) => balance.symbol === "SOL")?.balance || 0;
 
   const base58 = useMemo(() => publicKey?.toBase58(), [publicKey]);
   const content = useMemo(() => {
@@ -84,58 +69,104 @@ export function WalletMultiButton({
   };
 
   const openModal = () => {
-    console.log("openModal");
     setVisible(true);
-    setDropdownOpen(false);
+    setDialogOpen(false);
   };
 
   const disconnectWallet = () => {
     disconnect();
-    setDropdownOpen(false);
+    setDialogOpen(false);
   };
-
-  console.log(wallet);
 
   if (!wallet) {
     return <Button onClick={openModal}>{content}</Button>;
   }
 
   return (
-    <div ref={ref}>
-      <ButtonGroup>
-        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-4">
-              {wallet.adapter.icon && (
-                <img
-                  src={wallet.adapter.icon}
-                  alt={wallet.adapter.name}
-                  className="w-6 h-6 -mx-2.5"
-                />
+    <>
+      <Button
+        variant="outline"
+        className="gap-4"
+        onClick={() => setDialogOpen(true)}
+      >
+        {wallet.adapter.icon && (
+          <img
+            src={wallet.adapter.icon}
+            alt={wallet.adapter.name}
+            className="w-6 h-6 -mx-2.5"
+          />
+        )}
+        {content}
+      </Button>
+
+      <Modal
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        title={isDesktop ? "Wallet" : undefined}
+        contentClassName="sm:max-w-[425px]"
+      >
+        <div className="flex flex-col items-center space-y-3 p-3 pt-0 sm:pt-1 sm:p-0">
+          {/* Wallet Icon */}
+          <div className="flex flex-col items-center space-y-2 mt-4">
+            {wallet.adapter.icon && (
+              <img
+                src={wallet.adapter.icon}
+                alt={wallet.adapter.name}
+                className="w-16 h-16"
+              />
+            )}
+            <div className="text-sm text-gray-500 dark:text-gray-500">
+              {wallet.adapter.name}
+            </div>
+          </div>
+
+          {/* Address with Copy */}
+          <div className="flex flex-col items-center space-y-2">
+            <div
+              className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg px-3 py-2 transition-colors"
+              onClick={copyAddress}
+            >
+              <span className="font-mono text-base text-gray-600 dark:text-gray-400">
+                {base58 ? `${base58.slice(0, 10)}...${base58.slice(-10)}` : ""}
+              </span>
+              {copied ? (
+                <Check className="h-4 w-4 text-green-600" />
+              ) : (
+                <Copy className="h-4 w-4 text-gray-400" />
               )}
-              {content}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={openModal}>
+            </div>
+          </div>
+
+          {/* SOL Balance */}
+          <div className="text-center">
+            <div className="text-md text-gray-500 dark:text-gray-500">
+              {solBalance.toFixed(4)}{" "}
+              <span className="text-gray-500 dark:text-gray-500">SOL</span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col space-y-3 w-full mt-4">
+            <Button
+              variant="secondary"
+              onClick={openModal}
+              className="w-full justify-start h-12"
+            >
               <ArrowRightLeft className="mr-2 h-4 w-4" />
-              <span>{labels["change-wallet"]}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={disconnectWallet}>
+              {labels["change-wallet"]}
+            </Button>
+
+            <Button
+              variant="secondary"
+              onClick={disconnectWallet}
+              className="w-full justify-start h-12"
+            >
               <LogOut className="mr-2 h-4 w-4" />
-              <span>{labels["disconnect"]}</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <ButtonGroupSeparator />
-        <Button variant="outline" size="icon" onClick={copyAddress}>
-          {copied ? (
-            <Check className="h-4 w-4" />
-          ) : (
-            <Copy className="h-4 w-4" />
-          )}
-        </Button>
-      </ButtonGroup>
-    </div>
+              {labels["disconnect"]}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }
