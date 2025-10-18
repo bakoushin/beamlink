@@ -53,12 +53,12 @@ export function WalletMultiButton({
   const base58 = useMemo(() => publicKey?.toBase58(), [publicKey]);
   const content = useMemo(() => {
     if (connecting) return labels["connecting"];
-    if (wallet)
+    if (wallet && publicKey)
       return base58
         ? `${base58.slice(0, 4)}...${base58.slice(-4)}`
         : labels["connected"];
     return labels["no-wallet"];
-  }, [connecting, wallet, base58, labels]);
+  }, [connecting, wallet, publicKey, base58, labels]);
 
   const copyAddress = async () => {
     if (base58) {
@@ -78,7 +78,7 @@ export function WalletMultiButton({
     setDialogOpen(false);
   };
 
-  if (!wallet) {
+  if (!wallet || !publicKey) {
     return <Button onClick={openModal}>{content}</Button>;
   }
 
