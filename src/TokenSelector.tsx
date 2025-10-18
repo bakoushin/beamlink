@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Search, X, BadgeCheck, Wallet, Coins } from "lucide-react";
+import { Search, X, Wallet, Coins } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 
@@ -21,7 +21,7 @@ import {
   type UserTokenBalance,
 } from "@/queries";
 import type { Token } from "@/types/token";
-import { formatPrice, formatMarketCap } from "@/lib/formatters";
+import { formatPrice, formatTokenBalance } from "@/lib/formatters";
 
 interface TokenSelectorProps {
   tokens?: Token[];
@@ -99,6 +99,7 @@ export function TokenSelector({
       ) : (
         <TokenList
           tokens={tokens || fetchedTokens || []}
+          userBalances={userBalances}
           isLoading={isLoading}
           onTokenSelect={handleTokenSelect}
         />
@@ -109,12 +110,14 @@ export function TokenSelector({
 
 function TokenList({
   tokens,
+  userBalances,
   isLoading,
   onTokenSelect,
 }: {
   tokens: Token[];
+  userBalances?: UserTokenBalance[];
   isLoading?: boolean;
-  onTokenSelect?: (token: Token) => void;
+  onTokenSelect?: (token: Token | UserTokenBalance) => void;
 }) {
   const [searchQuery, setSearchQuery] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -127,6 +130,12 @@ function TokenList({
       token.id.toLowerCase().includes(query)
     );
   });
+
+  // Helper function to find user balance for a token
+  const getUserBalance = (token: Token): UserTokenBalance | null => {
+    if (!userBalances) return null;
+    return userBalances.find((balance) => balance.address === token.id) || null;
+  };
 
   const handleClear = () => {
     setSearchQuery("");
@@ -159,7 +168,7 @@ function TokenList({
         )}
       </div>
       <div
-        className="overflow-y-auto flex-1 -mx-4 px-4"
+        className="overflow-y-auto flex-1"
         style={{ maxHeight: "calc(80vh - 180px)" }}
       >
         {isLoading ? (
@@ -167,12 +176,13 @@ function TokenList({
             Loading tokens...
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-4">
             {filteredTokens.length > 0 ? (
               filteredTokens.map((token) => (
-                <TokenItem
+                <TokenRow
                   key={token.id}
                   token={token}
+                  userBalance={getUserBalance(token)}
                   onSelect={onTokenSelect}
                 />
               ))
@@ -188,35 +198,50 @@ function TokenList({
   );
 }
 
-function TokenItem({
+function TokenRow({
   token,
+  userBalance,
   onSelect,
 }: {
   token: Token;
-  onSelect?: (token: Token) => void;
+  userBalance?: UserTokenBalance | null;
+  onSelect?: (item: Token | UserTokenBalance) => void;
 }) {
   const [imageLoaded, setImageLoaded] = React.useState(false);
   const [imageError, setImageError] = React.useState(false);
 
+  const hasBalance = !!userBalance;
+  // Always use token data as primary source, userBalance as fallback
+  const tokenIcon = token.icon || userBalance?.image || "";
+  const tokenName = token.name || userBalance?.name || "";
+  const tokenSymbol = token.symbol || userBalance?.symbol || "";
+  const tokenAddress = token.id || userBalance?.address || "";
+
+  const handleClick = () => {
+    if (onSelect) {
+      onSelect(hasBalance ? userBalance : token);
+    }
+  };
+
   return (
     <Item size="sm" asChild>
-      <button
-        className="w-full text-left hover:bg-accent"
-        onClick={() => onSelect?.(token)}
+      <Button
+        className="w-full text-left hover:bg-accent h-14 px-0"
+        onClick={handleClick}
       >
         <ItemMedia variant="image">
           <div className="relative w-10 h-10">
             {/* Show fallback icon until image loads or if there's an error */}
-            {(!imageLoaded || imageError || !token.icon) && (
+            {(!imageLoaded || imageError || !tokenIcon) && (
               <div className="absolute inset-0 rounded-full bg-muted flex items-center justify-center">
                 <Coins className="h-5 w-5 text-muted-foreground" />
               </div>
             )}
             {/* Load image in background */}
-            {token.icon && !imageError && (
+            {tokenIcon && !imageError && (
               <img
-                src={token.icon}
-                alt={token.name}
+                src={tokenIcon}
+                alt={tokenName}
                 className={`rounded-full w-10 h-10 ${
                   imageLoaded ? "opacity-100" : "opacity-0"
                 }`}
@@ -227,24 +252,98 @@ function TokenItem({
           </div>
         </ItemMedia>
         <ItemContent>
-          <div className="flex items-center gap-1">
-            <ItemTitle>{token.name}</ItemTitle>
-            {token.isVerified && (
-              <BadgeCheck
-                className="h-4 w-4 text-blue-500 flex-shrink-0"
-                aria-label="Verified token"
-              />
-            )}
-          </div>
-          <ItemDescription>{token.symbol}</ItemDescription>
+          <ItemTitle className="text-foreground">{tokenSymbol}</ItemTitle>
+          <ItemDescription className="font-mono text-xs">
+            {tokenAddress.slice(0, 4)}...{tokenAddress.slice(-4)}
+          </ItemDescription>
         </ItemContent>
         <ItemContent className="items-end">
-          <ItemTitle>{formatPrice(token.usdPrice)}</ItemTitle>
-          <ItemDescription>{formatMarketCap(token.mcap)}</ItemDescription>
+          {hasBalance ? (
+            <>
+              <ItemTitle className="text-foreground">
+                {formatTokenBalance(userBalance.balance)}
+              </ItemTitle>
+              <ItemDescription>
+                {userBalance.usdValue !== null
+                  ? formatPrice(userBalance.usdValue)
+                  : "—"}
+              </ItemDescription>
+            </>
+          ) : (
+            <>
+              <ItemTitle></ItemTitle>
+              <ItemDescription className="text-muted-foreground">
+                {formatPrice(token.usdPrice)}
+              </ItemDescription>
+            </>
+          )}
         </ItemContent>
-      </button>
+      </Button>
     </Item>
   );
+}
+
+// Helper function to convert UserTokenBalance to Token format for TokenRow
+function userBalanceToToken(balance: UserTokenBalance): Token {
+  return {
+    id: balance.address,
+    name: balance.name,
+    symbol: balance.symbol,
+    icon: balance.image || "",
+    decimals: balance.decimals,
+    usdPrice: balance.usdPrice || 0,
+    // Add minimal required fields for Token interface
+    circSupply: 0,
+    totalSupply: 0,
+    tokenProgram: "",
+    firstPool: { id: "", createdAt: "" },
+    holderCount: 0,
+    audit: { topHoldersPercentage: 0 },
+    organicScore: 0,
+    organicScoreLabel: "",
+    tags: [],
+    fdv: 0,
+    mcap: 0,
+    priceBlockId: 0,
+    liquidity: 0,
+    stats5m: {
+      priceChange: 0,
+      buyVolume: 0,
+      sellVolume: 0,
+      numBuys: 0,
+      numSells: 0,
+      numTraders: 0,
+      numNetBuyers: 0,
+    },
+    stats1h: {
+      priceChange: 0,
+      buyVolume: 0,
+      sellVolume: 0,
+      numBuys: 0,
+      numSells: 0,
+      numTraders: 0,
+      numNetBuyers: 0,
+    },
+    stats6h: {
+      priceChange: 0,
+      buyVolume: 0,
+      sellVolume: 0,
+      numBuys: 0,
+      numSells: 0,
+      numTraders: 0,
+      numNetBuyers: 0,
+    },
+    stats24h: {
+      priceChange: 0,
+      buyVolume: 0,
+      sellVolume: 0,
+      numBuys: 0,
+      numSells: 0,
+      numTraders: 0,
+      numNetBuyers: 0,
+    },
+    updatedAt: "",
+  };
 }
 
 function BalancesList({
@@ -254,7 +353,7 @@ function BalancesList({
 }: {
   balances: UserTokenBalance[];
   isLoading?: boolean;
-  onTokenSelect?: (balance: UserTokenBalance) => void;
+  onTokenSelect?: (balance: UserTokenBalance | Token) => void;
 }) {
   const [searchQuery, setSearchQuery] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -274,14 +373,14 @@ function BalancesList({
   };
 
   return (
-    <div className="px-4 flex flex-col gap-4">
+    <div className="flex flex-col gap-4 px-4 py-0 sm:px-0">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
           ref={inputRef}
           type="text"
           id="search"
-          placeholder="Search your tokens"
+          placeholder="Search by symbol or address"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9 pr-9"
@@ -307,13 +406,14 @@ function BalancesList({
             Loading your tokens...
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             {filteredBalances.length > 0 ? (
               <>
                 {filteredBalances.map((balance) => (
-                  <BalanceItem
+                  <TokenRow
                     key={balance.address}
-                    balance={balance}
+                    token={userBalanceToToken(balance)}
+                    userBalance={balance}
                     onSelect={onTokenSelect}
                   />
                 ))}
@@ -332,66 +432,5 @@ function BalancesList({
         )}
       </div>
     </div>
-  );
-}
-
-function BalanceItem({
-  balance,
-  onSelect,
-}: {
-  balance: UserTokenBalance;
-  onSelect?: (balance: UserTokenBalance) => void;
-}) {
-  const [imageLoaded, setImageLoaded] = React.useState(false);
-  const [imageError, setImageError] = React.useState(false);
-
-  return (
-    <Item size="sm" asChild>
-      <button
-        className="w-full text-left hover:bg-accent"
-        onClick={() => onSelect?.(balance)}
-      >
-        <ItemMedia variant="image">
-          <div className="relative w-10 h-10">
-            {/* Show fallback icon until image loads or if there's an error */}
-            {(!imageLoaded || imageError || !balance.image) && (
-              <div className="absolute inset-0 rounded-full bg-muted flex items-center justify-center">
-                <Coins className="h-5 w-5 text-muted-foreground" />
-              </div>
-            )}
-            {/* Load image in background */}
-            {balance.image && !imageError && (
-              <img
-                src={balance.image}
-                alt={balance.name}
-                className={`rounded-full w-10 h-10 ${
-                  imageLoaded ? "opacity-100" : "opacity-0"
-                }`}
-                onLoad={() => setImageLoaded(true)}
-                onError={() => setImageError(true)}
-              />
-            )}
-          </div>
-        </ItemMedia>
-        <ItemContent>
-          <ItemTitle>{balance.symbol}</ItemTitle>
-          <ItemDescription>
-            {balance.balance.toLocaleString(undefined, {
-              maximumFractionDigits: 6,
-            })}
-          </ItemDescription>
-        </ItemContent>
-        <ItemContent className="items-end">
-          <ItemTitle>
-            {balance.usdValue !== null ? formatPrice(balance.usdValue) : "—"}
-          </ItemTitle>
-          <ItemDescription>
-            {balance.usdPrice !== null
-              ? formatPrice(balance.usdPrice)
-              : "No price"}
-          </ItemDescription>
-        </ItemContent>
-      </button>
-    </Item>
   );
 }
