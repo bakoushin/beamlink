@@ -1,0 +1,471 @@
+{
+  "accounts": [
+    {
+      "discriminator": [148, 146, 121, 66, 207, 173, 21, 227],
+      "name": "Deposit"
+    }
+  ],
+  "address": "7BwYVv3WL2dSTwnvsGHw8LUBoahgG8x5q3fvw6c8pzGW",
+  "errors": [
+    {
+      "code": 6000,
+      "msg": "Zero amount",
+      "name": "ZeroAmount"
+    },
+    {
+      "code": 6001,
+      "msg": "ATA mismatch",
+      "name": "AtaMismatch"
+    },
+    {
+      "code": 6002,
+      "msg": "Not owner",
+      "name": "NotOwner"
+    },
+    {
+      "code": 6003,
+      "msg": "Invalid ID",
+      "name": "InvalidDepositId"
+    },
+    {
+      "code": 6004,
+      "msg": "Consumed",
+      "name": "AlreadyConsumed"
+    }
+  ],
+  "events": [
+    {
+      "discriminator": [111, 141, 26, 45, 161, 35, 100, 57],
+      "name": "Deposited"
+    }
+  ],
+  "instructions": [
+    {
+      "accounts": [
+        {
+          "docs": ["User paying for accounts and sending tokens"],
+          "name": "user",
+          "signer": true,
+          "writable": true
+        },
+        {
+          "docs": [
+            "Classic SPL mint (NOT Token-2022). Using anchor_spl::token enforces classic."
+          ],
+          "name": "mint"
+        },
+        {
+          "docs": ["User's ATA for the mint"],
+          "name": "user_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [118, 97, 117, 108, 116, 45, 97, 117, 116, 104]
+              }
+            ]
+          }
+        },
+        {
+          "docs": ["Program vault ATA for this mint (created if missing)"],
+          "name": "vault_ata",
+          "pda": {
+            "program": {
+              "kind": "const",
+              "value": [
+                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
+                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
+                219, 233, 248, 89
+              ]
+            },
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "vault_authority"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          },
+          "writable": true
+        },
+        {
+          "name": "deposit_id"
+        },
+        {
+          "docs": ["The per-deposit record, unique per deposit_id"],
+          "name": "deposit",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [100, 101, 112, 111, 115, 105, 116]
+              },
+              {
+                "kind": "account",
+                "path": "deposit_id"
+              }
+            ]
+          },
+          "writable": true
+        },
+        {
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
+        },
+        {
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
+        },
+        {
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+          "name": "associated_token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ],
+      "discriminator": [242, 35, 198, 137, 82, 225, 242, 182],
+      "docs": [
+        "Deposit SPL tokens into the program vault and create a unique per-ID deposit record."
+      ],
+      "name": "deposit"
+    },
+    {
+      "accounts": [
+        {
+          "docs": ["User paying for accounts and sending SOL"],
+          "name": "user",
+          "signer": true,
+          "writable": true
+        },
+        {
+          "name": "sol_vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [115, 111, 108, 45, 118, 97, 117, 108, 116]
+              }
+            ]
+          },
+          "writable": true
+        },
+        {
+          "name": "deposit_id"
+        },
+        {
+          "docs": ["The per-deposit record, unique per deposit_id"],
+          "name": "deposit",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [100, 101, 112, 111, 115, 105, 116]
+              },
+              {
+                "kind": "account",
+                "path": "deposit_id"
+              }
+            ]
+          },
+          "writable": true
+        },
+        {
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ],
+      "discriminator": [108, 81, 78, 117, 125, 155, 56, 200],
+      "docs": [
+        "Deposit native SOL into the program vault and create a unique per-ID deposit record."
+      ],
+      "name": "deposit_sol"
+    },
+    {
+      "accounts": [
+        {
+          "docs": ["Anyone can pay for ATA creation"],
+          "name": "payer",
+          "signer": true,
+          "writable": true
+        },
+        {
+          "docs": ["SPL mint"],
+          "name": "mint",
+          "relations": ["deposit"]
+        },
+        {
+          "name": "vault_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [118, 97, 117, 108, 116, 45, 97, 117, 116, 104]
+              }
+            ]
+          }
+        },
+        {
+          "docs": ["Program's vault ATA holding the deposited tokens"],
+          "name": "vault_ata",
+          "pda": {
+            "program": {
+              "kind": "const",
+              "value": [
+                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
+                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
+                219, 233, 248, 89
+              ]
+            },
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "vault_authority"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6, 221, 246, 225, 215, 101, 161, 147, 217, 203, 225, 70, 206,
+                  235, 121, 172, 28, 180, 133, 237, 95, 91, 55, 145, 58, 140,
+                  245, 133, 126, 255, 0, 169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          },
+          "writable": true
+        },
+        {
+          "docs": [
+            "Signer that must match the stored deposit_id in the record"
+          ],
+          "name": "deposit_id",
+          "signer": true
+        },
+        {
+          "docs": ["The per-deposit record; will be closed to recipient"],
+          "name": "deposit",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [100, 101, 112, 111, 115, 105, 116]
+              },
+              {
+                "kind": "account",
+                "path": "deposit_id"
+              }
+            ]
+          },
+          "writable": true
+        },
+        {
+          "docs": [
+            "Recipient of tokens and rent lamports from closing deposit account"
+          ],
+          "name": "recipient",
+          "writable": true
+        },
+        {
+          "docs": ["Recipient ATA (created if missing)"],
+          "name": "recipient_ata",
+          "pda": {
+            "program": {
+              "kind": "const",
+              "value": [
+                140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142,
+                13, 131, 11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216,
+                219, 233, 248, 89
+              ]
+            },
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "recipient"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          },
+          "writable": true
+        },
+        {
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
+        },
+        {
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
+        },
+        {
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+          "name": "associated_token_program"
+        }
+      ],
+      "args": [],
+      "discriminator": [183, 18, 70, 156, 148, 109, 161, 34],
+      "docs": [
+        "Withdraw tokens to the provided recipient. Requires that the holder of",
+        "the `deposit_id` keypair co-signs the transaction (as a Signer)."
+      ],
+      "name": "withdraw"
+    },
+    {
+      "accounts": [
+        {
+          "docs": ["Anyone can pay for transaction fees"],
+          "name": "payer",
+          "signer": true,
+          "writable": true
+        },
+        {
+          "name": "sol_vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [115, 111, 108, 45, 118, 97, 117, 108, 116]
+              }
+            ]
+          },
+          "writable": true
+        },
+        {
+          "docs": [
+            "Signer that must match the stored deposit_id in the record"
+          ],
+          "name": "deposit_id",
+          "signer": true
+        },
+        {
+          "docs": ["The per-deposit record; will be closed to recipient"],
+          "name": "deposit",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [100, 101, 112, 111, 115, 105, 116]
+              },
+              {
+                "kind": "account",
+                "path": "deposit_id"
+              }
+            ]
+          },
+          "writable": true
+        },
+        {
+          "docs": [
+            "Recipient of SOL and rent lamports from closing deposit account"
+          ],
+          "name": "recipient",
+          "writable": true
+        },
+        {
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
+        }
+      ],
+      "args": [],
+      "discriminator": [145, 131, 74, 136, 65, 137, 42, 38],
+      "docs": [
+        "Withdraw native SOL to the provided recipient. Requires that the holder of",
+        "the `deposit_id` keypair co-signs the transaction (as a Signer)."
+      ],
+      "name": "withdraw_sol"
+    }
+  ],
+  "metadata": {
+    "description": "Beamlink: send tokens in a message",
+    "name": "beamlink0",
+    "spec": "0.1.0",
+    "version": "0.1.0"
+  },
+  "types": [
+    {
+      "name": "Deposit",
+      "type": {
+        "fields": [
+          {
+            "name": "deposit_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "consumed",
+            "type": "bool"
+          }
+        ],
+        "kind": "struct"
+      }
+    },
+    {
+      "name": "Deposited",
+      "type": {
+        "fields": [
+          {
+            "name": "deposit_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          }
+        ],
+        "kind": "struct"
+      }
+    }
+  ]
+}
