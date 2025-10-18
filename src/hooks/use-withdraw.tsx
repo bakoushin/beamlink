@@ -1,14 +1,20 @@
 import { useState, useEffect } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
+import {
+  PublicKey,
+  Transaction,
+  SystemProgram,
+  TransactionInstruction,
+} from "@solana/web3.js";
 import bs58 from "bs58";
+import { Program, AnchorProvider } from "@coral-xyz/anchor";
 import {
   getAssociatedTokenAddress,
   TOKEN_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { Program, AnchorProvider, BN } from "@coral-xyz/anchor";
 import idl from "@/lib/beamlink0-idl.json";
+import { requestClaim } from "@/lib/claim-api";
 import type { Token } from "@/types/token";
 
 // SOL mint address constant
@@ -43,7 +49,7 @@ function isSolToken(token: Token): boolean {
 
 export function useWithdraw(privateKey?: string): UseWithdrawReturn {
   const { connection } = useConnection();
-  const { publicKey, signTransaction } = useWallet();
+  const { publicKey } = useWallet();
   const [withdrawInfo, setWithdrawInfo] = useState<WithdrawInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
@@ -66,15 +72,7 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
         const depositKeypair = Keypair.fromSecretKey(bs58.decode(privateKey));
         const depositId = depositKeypair.publicKey;
 
-        // Create provider and program
-        const provider = new AnchorProvider(
-          connection,
-          { publicKey: depositId } as any,
-          {
-            commitment: "confirmed",
-          }
-        );
-        const program = new Program(idl as any, provider);
+        // No need for program interface - using direct account fetching
 
         // Get deposit PDA
         const [depositPda] = PublicKey.findProgramAddressSync(
@@ -82,19 +80,60 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
           PROGRAM_ID
         );
 
-        // Fetch deposit account data
-        const depositAccount = await program.account.deposit.fetch(depositPda);
+        // Fetch deposit account data directly (more reliable than program interface)
+        const accountInfo = await connection.getAccountInfo(depositPda);
+        if (!accountInfo) {
+          throw new Error("Deposit account not found");
+        }
+
+        // Parse the account data manually
+        // Skip the 8-byte discriminator
+        const accountData = accountInfo.data.slice(8);
+
+        // Parse based on the IDL structure
+        // Deposit account structure:
+        // - deposit_id (pubkey) - 32 bytes
+        // - mint (pubkey) - 32 bytes
+        // - amount (u64) - 8 bytes
+        // - creator (pubkey) - 32 bytes
+        // - created_at (i64) - 8 bytes
+        // - consumed (bool) - 1 byte
+        const depositAccount = {
+          depositId: new PublicKey(accountData.slice(0, 32)),
+          mint: new PublicKey(accountData.slice(32, 64)),
+          amount: accountData.readBigUInt64LE(64),
+          creator: new PublicKey(accountData.slice(72, 104)),
+          createdAt: accountData.readBigInt64LE(104),
+          consumed: accountData.readUInt8(112) === 1,
+        };
+
+        // Debug logging
+        console.log("Parsed deposit account:", {
+          depositId: depositAccount.depositId.toBase58(),
+          mint: depositAccount.mint.toBase58(),
+          amount: depositAccount.amount.toString(),
+          creator: depositAccount.creator.toBase58(),
+          createdAt: depositAccount.createdAt.toString(),
+          consumed: depositAccount.consumed,
+          isDefaultMint: depositAccount.mint.equals(PublicKey.default),
+        });
 
         // Check if deposit is claimed
-        const isClaimed = depositAccount.claimed;
+        const isClaimed = depositAccount.consumed;
 
         // Get token information
         let token: Token | null = null;
         let usdValue: number | undefined;
 
-        // Check if it's SOL (either isSol flag is true OR mint is default pubkey)
-        const isSolDeposit =
-          depositAccount.isSol || depositAccount.mint.equals(PublicKey.default);
+        // Check if it's SOL (mint is default pubkey)
+        const isSolDeposit = depositAccount.mint.equals(PublicKey.default);
+
+        console.log("SOL detection:", {
+          isDefaultMint: depositAccount.mint.equals(PublicKey.default),
+          mintAddress: depositAccount.mint.toBase58(),
+          defaultMint: PublicKey.default.toBase58(),
+          isSolDeposit: isSolDeposit,
+        });
 
         if (isSolDeposit) {
           // SOL token
@@ -158,7 +197,7 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
   }, [privateKey, connection]);
 
   const claim = async (): Promise<string> => {
-    if (!publicKey || !signTransaction || !withdrawInfo) {
+    if (!publicKey || !withdrawInfo) {
       throw new Error("Wallet not connected or no withdraw info available");
     }
 
@@ -171,12 +210,20 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
       const depositKeypair = Keypair.fromSecretKey(bs58.decode(privateKey!));
       const depositId = depositKeypair.publicKey;
 
-      // Create provider and program
-      const wallet = { publicKey, signTransaction } as any;
-      const provider = new AnchorProvider(connection, wallet, {
+      // Determine if this is a SOL claim
+      const isSol = Boolean(
+        withdrawInfo.token && isSolToken(withdrawInfo.token)
+      );
+
+      // Create provider and program for transaction building
+      const provider = new AnchorProvider(connection, { publicKey } as any, {
         commitment: "confirmed",
       });
       const program = new Program(idl as any, provider);
+
+      // Debug: Check if program methods are available
+      console.log("Program methods:", Object.keys(program.methods || {}));
+      console.log("Program accounts:", Object.keys(program.account || {}));
 
       // Get deposit PDA
       const [depositPda] = PublicKey.findProgramAddressSync(
@@ -184,29 +231,43 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
         PROGRAM_ID
       );
 
+      // Hardcoded relayer public key (for simplicity)
+      // TODO: Fetch this from backend in production
+      const relayerPublicKey = new PublicKey(
+        "3ekMEvTXgoU9MDEviwGV93DMGMrZnhtRNyVvEJuq1Ldr"
+      );
+
       let tx: Transaction;
 
-      if (withdrawInfo.token && isSolToken(withdrawInfo.token)) {
-        // SOL claim
+      if (isSol) {
+        // SOL claim transaction - build manually
         const [solVault] = PublicKey.findProgramAddressSync(
           [Buffer.from("sol-vault")],
           PROGRAM_ID
         );
 
-        tx = new Transaction().add(
-          await program.methods
-            .claimSol()
-            .accounts({
-              user: publicKey,
-              solVault: solVault,
-              depositId: depositId,
-              deposit: depositPda,
-              systemProgram: SystemProgram.programId,
-            })
-            .instruction()
-        );
+        // Build withdraw_sol instruction manually
+        // Accounts: payer, sol_vault, deposit_id, deposit, recipient, system_program
+        const withdrawSolInstruction = new TransactionInstruction({
+          programId: PROGRAM_ID,
+          keys: [
+            { pubkey: relayerPublicKey, isSigner: true, isWritable: true }, // payer (relayer)
+            { pubkey: solVault, isSigner: false, isWritable: true }, // sol_vault
+            { pubkey: depositId, isSigner: true, isWritable: false }, // deposit_id
+            { pubkey: depositPda, isSigner: false, isWritable: true }, // deposit (closed to recipient)
+            { pubkey: publicKey, isSigner: false, isWritable: true }, // recipient (user)
+            {
+              pubkey: SystemProgram.programId,
+              isSigner: false,
+              isWritable: false,
+            }, // system_program
+          ],
+          data: Buffer.from([145, 131, 74, 136, 65, 137, 42, 38]), // withdraw_sol discriminator
+        });
+
+        tx = new Transaction().add(withdrawSolInstruction);
       } else {
-        // SPL token claim
+        // SPL token claim transaction
         const mintAddress = new PublicKey(withdrawInfo.token!.id);
 
         const [vaultAuthority] = PublicKey.findProgramAddressSync(
@@ -230,43 +291,78 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
           ASSOCIATED_TOKEN_PROGRAM_ID
         );
 
-        tx = new Transaction().add(
-          await program.methods
-            .claim()
-            .accounts({
-              user: publicKey,
-              mint: mintAddress,
-              userAta: userAta,
-              vaultAuthority: vaultAuthority,
-              vaultAta: vaultAta,
-              depositId: depositId,
-              deposit: depositPda,
-              systemProgram: SystemProgram.programId,
-              tokenProgram: TOKEN_PROGRAM_ID,
-              associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-            })
-            .instruction()
-        );
+        // Build claim instruction manually
+        const claimInstruction = new TransactionInstruction({
+          programId: PROGRAM_ID,
+          keys: [
+            { pubkey: publicKey, isSigner: false, isWritable: true },
+            { pubkey: mintAddress, isSigner: false, isWritable: false },
+            { pubkey: userAta, isSigner: false, isWritable: true },
+            { pubkey: vaultAuthority, isSigner: false, isWritable: false },
+            { pubkey: vaultAta, isSigner: false, isWritable: true },
+            { pubkey: depositId, isSigner: true, isWritable: false },
+            { pubkey: depositPda, isSigner: false, isWritable: true },
+            {
+              pubkey: SystemProgram.programId,
+              isSigner: false,
+              isWritable: false,
+            },
+            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+            {
+              pubkey: ASSOCIATED_TOKEN_PROGRAM_ID,
+              isSigner: false,
+              isWritable: false,
+            },
+          ],
+          data: Buffer.from([183, 18, 70, 156, 148, 109, 161, 34]), // withdraw discriminator
+        });
+
+        tx = new Transaction().add(claimInstruction);
       }
 
-      // Get recent blockhash and set fee payer
+      // Get recent blockhash and set relayer as fee payer
       const { blockhash } = await connection.getLatestBlockhash();
       tx.recentBlockhash = blockhash;
-      tx.feePayer = publicKey;
+      tx.feePayer = relayerPublicKey; // Relayer will pay for the transaction
 
-      // Send and confirm transaction
-      const signedTx = await signTransaction(tx);
-      const signature = await connection.sendRawTransaction(
-        signedTx.serialize(),
-        {
-          skipPreflight: false,
-          preflightCommitment: "confirmed",
-        }
-      );
+      // The transaction will be signed with only the deposit keypair
+      // User's wallet is just the destination, not a signer
 
-      await connection.confirmTransaction(signature, "confirmed");
+      // Sign with ONLY the deposit keypair (from private key in URL)
+      console.log("Signing transaction with deposit keypair...");
+      tx.sign(depositKeypair);
+      console.log("Deposit keypair signature added");
 
-      return signature;
+      // Debug: Check signatures
+      console.log("Transaction signatures after deposit keypair signing:", {
+        signatures: tx.signatures.map((sig) => ({
+          publicKey: sig.publicKey.toBase58(),
+          signature: sig.signature ? "present" : "missing",
+        })),
+      });
+
+      // Serialize the partially signed transaction (relayer will complete signing)
+      const serializedTx = tx.serialize({ requireAllSignatures: false });
+      const transactionBase64 = Buffer.from(serializedTx).toString("base64");
+
+      // Send partially signed transaction to backend (relayer will complete signing)
+      const claimRequest = {
+        transaction: transactionBase64,
+        depositId: depositId.toBase58(),
+        userPublicKey: publicKey.toBase58(),
+        isSol: isSol,
+        mintAddress: isSol ? undefined : withdrawInfo.token?.id,
+      };
+
+      console.log("Sending partially signed transaction to relayer");
+
+      const result = await requestClaim(claimRequest);
+
+      if (!result.success) {
+        throw new Error(result.error || "Claim request failed");
+      }
+
+      return result.signature;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Claim failed";
       setError(errorMessage);
