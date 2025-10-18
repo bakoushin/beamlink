@@ -3,6 +3,7 @@ import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import {
   ConnectionProvider,
   WalletProvider,
+  useWallet,
 } from "@solana/wallet-adapter-react";
 import {
   PhantomWalletAdapter,
@@ -17,7 +18,7 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { topTokensQueryOptions } from "@/queries/tokens";
-import { WalletModalProvider } from "@/hooks/use-wallet-modal";
+import { WalletModalProvider, useWalletModal } from "@/hooks/use-wallet-modal";
 import { WalletMultiButton } from "@/components/wallet/WalletMultiButton";
 import { useDeposit } from "@/hooks/use-deposit";
 import { useWithdraw } from "@/hooks/use-withdraw";
@@ -76,6 +77,10 @@ function App() {
 function AppContent() {
   // Prefetch top tokens on app mount
   useQuery(topTokensQueryOptions);
+
+  // Wallet connection state
+  const { publicKey, wallet } = useWallet();
+  const { setVisible } = useWalletModal();
 
   // Parse URL hash for withdraw flow
   const [privateKey, setPrivateKey] = useState<string | undefined>(undefined);
@@ -191,6 +196,25 @@ function AppContent() {
 
   const canDeposit =
     selectedToken && tokenAmount && parseFloat(tokenAmount) > 0;
+
+  // Check if wallet is connected
+  const isWalletConnected = wallet && publicKey;
+
+  // Button text based on wallet connection state
+  const getButtonText = () => {
+    if (isLoading) return "Processing Deposit...";
+    if (!isWalletConnected) return "Connect wallet";
+    return "Create BeamLink";
+  };
+
+  // Handle button click
+  const handleButtonClick = () => {
+    if (!isWalletConnected) {
+      setVisible(true);
+      return;
+    }
+    handleDeposit();
+  };
 
   // Show withdraw interface if private key is present in URL
   if (privateKey) {
@@ -528,11 +552,11 @@ function AppContent() {
         )}
 
         <Button
-          onClick={handleDeposit}
-          disabled={!canDeposit || isLoading}
+          onClick={handleButtonClick}
+          disabled={!isWalletConnected ? false : (!canDeposit || isLoading)}
           className="w-full"
         >
-          {isLoading ? "Processing Deposit..." : "Deposit"}
+          {getButtonText()}
         </Button>
 
         {error && (
