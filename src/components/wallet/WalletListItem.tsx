@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import type { Wallet } from "@solana/wallet-adapter-react";
 import { WalletReadyState } from "@solana/wallet-adapter-base";
+import { Wallet as WalletIcon } from "lucide-react";
 
 interface WalletListItemProps {
   wallet: Wallet;
@@ -10,20 +12,26 @@ interface WalletListItemProps {
 export function WalletListItem({ wallet, handleClick }: WalletListItemProps) {
   return (
     <Button
-      variant="ghost"
-      className="w-full justify-between gap-4 px-4 py-2 first:mt-2 last:mb-2"
+      variant="secondary"
+      className="w-full justify-between h-14"
       onClick={handleClick}
     >
-      <div className="flex items-center gap-2">
-        <img
-          src={wallet.adapter.icon || "/placeholder.svg"}
-          alt={`${wallet.adapter.name} icon`}
-          className="w-6 h-6"
-        />
-        <span className="text-lg font-semibold">{wallet.adapter.name}</span>
+      <div className="flex items-center gap-4">
+        {wallet.adapter.icon ? (
+          <img
+            src={wallet.adapter.icon}
+            alt={`${wallet.adapter.name} icon`}
+            className="size-10"
+          />
+        ) : (
+          <WalletIcon className="size-10 text-muted-foreground" />
+        )}
+        <span className="text-sm">{wallet.adapter.name}</span>
       </div>
       {wallet.readyState === WalletReadyState.Installed && (
-        <span className="text-sm text-muted-foreground">Detected</span>
+        <Badge className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+          Detected
+        </Badge>
       )}
     </Button>
   );

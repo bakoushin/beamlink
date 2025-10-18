@@ -5,7 +5,6 @@ import {
   WalletProvider,
 } from "@solana/wallet-adapter-react";
 import {
-  LedgerWalletAdapter,
   PhantomWalletAdapter,
   SolflareWalletAdapter,
   UnsafeBurnerWalletAdapter,
@@ -19,7 +18,6 @@ import {
 } from "@tanstack/react-query";
 import { topTokensQueryOptions } from "@/queries/tokens";
 import { WalletModalProvider } from "@/hooks/use-wallet-modal";
-import { WalletModal } from "@/components/wallet/WalletModal";
 import { WalletMultiButton } from "@/components/wallet/WalletMultiButton";
 import { useDeposit } from "@/hooks/use-deposit";
 import { useWithdraw } from "@/hooks/use-withdraw";
@@ -56,7 +54,6 @@ function App() {
     () => [
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter(),
-      new LedgerWalletAdapter(),
       new UnsafeBurnerWalletAdapter(),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -68,7 +65,6 @@ function App() {
       <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets} autoConnect>
           <WalletModalProvider>
-            <WalletModal />
             <AppContent />
           </WalletModalProvider>
         </WalletProvider>

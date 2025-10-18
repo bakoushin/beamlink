@@ -30,7 +30,7 @@ export function WalletModalProvider({
     <WalletModalContext.Provider value={{ visible, setVisible }}>
       {children}
 
-      {visible && <WalletModal />}
+      {visible && <WalletModal visible={visible} setVisible={setVisible} />}
     </WalletModalContext.Provider>
   );
 }
