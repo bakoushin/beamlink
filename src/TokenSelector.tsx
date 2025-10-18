@@ -71,7 +71,10 @@ export function TokenSelector({
     if (onTokenSelect) {
       onTokenSelect(token);
     }
-    handleOpenChange(false);
+    // Defer closing to avoid race condition with click events during animation
+    setTimeout(() => {
+      handleOpenChange(false);
+    }, 0);
   };
 
   return (
