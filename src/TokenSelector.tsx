@@ -5,22 +5,7 @@ import { Search, X, BadgeCheck, Wallet, Coins } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 
-import { useMediaQuery } from "@/hooks/use-media-query";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import {
   Item,
@@ -29,6 +14,7 @@ import {
   ItemTitle,
   ItemDescription,
 } from "@/components/ui/item";
+import { Modal } from "@/components/Modal";
 import {
   topTokensQueryOptions,
   userTokenBalancesQueryOptions,
@@ -39,12 +25,23 @@ import { formatPrice, formatMarketCap } from "@/lib/formatters";
 
 interface TokenSelectorProps {
   tokens?: Token[];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onTokenSelect?: (token: Token | UserTokenBalance) => void;
+  trigger?: React.ReactNode;
 }
 
-export function TokenSelector({ tokens }: TokenSelectorProps) {
+export function TokenSelector({
+  tokens,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  onTokenSelect,
+  trigger,
+}: TokenSelectorProps) {
   const { connection } = useConnection();
   const { publicKey } = useWallet();
   const [showAllTokens, setShowAllTokens] = React.useState(false);
+  const [internalOpen, setInternalOpen] = React.useState(false);
 
   // Fetch top tokens (always)
   const { data: fetchedTokens, isLoading: isLoadingTopTokens } = useQuery(
@@ -61,10 +58,11 @@ export function TokenSelector({ tokens }: TokenSelectorProps) {
   const displayUserBalances = isWalletConnected && userBalances;
   const isLoading = isWalletConnected ? isLoadingBalances : isLoadingTopTokens;
 
-  const [open, setOpen] = React.useState(false);
-  const isDesktop = useMediaQuery("(min-width: 768px)");
+  // Use controlled or uncontrolled state
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = controlledOnOpenChange || setInternalOpen;
 
-  // Reset showAllTokens when closing the dialog/drawer
+  // Reset showAllTokens when closing the modal
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     if (!newOpen) {
@@ -72,79 +70,57 @@ export function TokenSelector({ tokens }: TokenSelectorProps) {
     }
   };
 
-  if (isDesktop) {
-    return (
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogTrigger asChild>
+  // Handle token selection
+  const handleTokenSelect = (token: Token | UserTokenBalance) => {
+    if (onTokenSelect) {
+      onTokenSelect(token);
+    }
+    handleOpenChange(false);
+  };
+
+  return (
+    <Modal
+      open={open}
+      onOpenChange={handleOpenChange}
+      trigger={
+        trigger || (
           <Button variant="outline" disabled={isLoading}>
             {isLoading ? "Loading..." : "Select Token"}
           </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>
-              {displayUserBalances ? "Your Tokens" : "Select a token"}
-            </DialogTitle>
-          </DialogHeader>
-          {displayUserBalances ? (
-            <BalancesList
-              balances={userBalances}
-              isLoading={isLoading}
-              showAllTokens={showAllTokens}
-              onShowAllTokens={() => setShowAllTokens(true)}
-            />
-          ) : (
-            <TokenList
-              tokens={tokens || fetchedTokens || []}
-              isLoading={isLoading}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  return (
-    <Drawer
-      open={open}
-      onOpenChange={handleOpenChange}
+        )
+      }
+      title={displayUserBalances ? "Your Tokens" : "Select a token"}
+      dialogContentClassName="sm:max-w-[425px]"
+      drawerContentClassName="h-[80vh]"
       repositionInputs={false}
     >
-      <DrawerTrigger asChild>
-        <Button variant="outline" disabled={isLoading}>
-          {isLoading ? "Loading..." : "Select Token"}
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent className="h-[80vh]">
-        <DrawerHeader>
-          <DrawerTitle className="text-left">
-            {displayUserBalances ? "Your Tokens" : "Select a token"}
-          </DrawerTitle>
-        </DrawerHeader>
-        {displayUserBalances ? (
-          <BalancesList
-            balances={userBalances}
-            isLoading={isLoading}
-            showAllTokens={showAllTokens}
-            onShowAllTokens={() => setShowAllTokens(true)}
-          />
-        ) : (
-          <TokenList
-            tokens={tokens || fetchedTokens || []}
-            isLoading={isLoading}
-          />
-        )}
-      </DrawerContent>
-    </Drawer>
+      {displayUserBalances ? (
+        <BalancesList
+          balances={userBalances}
+          isLoading={isLoading}
+          showAllTokens={showAllTokens}
+          onShowAllTokens={() => setShowAllTokens(true)}
+          onTokenSelect={handleTokenSelect}
+        />
+      ) : (
+        <TokenList
+          tokens={tokens || fetchedTokens || []}
+          isLoading={isLoading}
+          onTokenSelect={handleTokenSelect}
+        />
+      )}
+    </Modal>
   );
 }
 
 function TokenList({
   tokens,
   isLoading,
+  onTokenSelect,
 }: {
   tokens: Token[];
   isLoading?: boolean;
+  onTokenSelect?: (token: Token) => void;
 }) {
   const [searchQuery, setSearchQuery] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -200,7 +176,11 @@ function TokenList({
           <div className="flex flex-col gap-2">
             {filteredTokens.length > 0 ? (
               filteredTokens.map((token) => (
-                <TokenItem key={token.id} token={token} />
+                <TokenItem
+                  key={token.id}
+                  token={token}
+                  onSelect={onTokenSelect}
+                />
               ))
             ) : (
               <div className="text-center text-muted-foreground py-8">
@@ -214,7 +194,13 @@ function TokenList({
   );
 }
 
-function TokenItem({ token }: { token: Token }) {
+function TokenItem({
+  token,
+  onSelect,
+}: {
+  token: Token;
+  onSelect?: (token: Token) => void;
+}) {
   const [imageLoaded, setImageLoaded] = React.useState(false);
   const [imageError, setImageError] = React.useState(false);
 
@@ -222,7 +208,7 @@ function TokenItem({ token }: { token: Token }) {
     <Item size="sm" asChild>
       <button
         className="w-full text-left hover:bg-accent"
-        onClick={() => console.log("Selected:", token.name)}
+        onClick={() => onSelect?.(token)}
       >
         <ItemMedia variant="image">
           <div className="relative w-10 h-10">
@@ -272,11 +258,13 @@ function BalancesList({
   isLoading,
   showAllTokens,
   onShowAllTokens,
+  onTokenSelect,
 }: {
   balances: UserTokenBalance[];
   isLoading?: boolean;
   showAllTokens: boolean;
   onShowAllTokens: () => void;
+  onTokenSelect?: (balance: UserTokenBalance) => void;
 }) {
   const [searchQuery, setSearchQuery] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -333,7 +321,11 @@ function BalancesList({
             {filteredBalances.length > 0 ? (
               <>
                 {filteredBalances.map((balance) => (
-                  <BalanceItem key={balance.address} balance={balance} />
+                  <BalanceItem
+                    key={balance.address}
+                    balance={balance}
+                    onSelect={onTokenSelect}
+                  />
                 ))}
                 {!showAllTokens && (
                   <div className="flex justify-center pt-2 pb-2">
@@ -365,7 +357,13 @@ function BalancesList({
   );
 }
 
-function BalanceItem({ balance }: { balance: UserTokenBalance }) {
+function BalanceItem({
+  balance,
+  onSelect,
+}: {
+  balance: UserTokenBalance;
+  onSelect?: (balance: UserTokenBalance) => void;
+}) {
   const [imageLoaded, setImageLoaded] = React.useState(false);
   const [imageError, setImageError] = React.useState(false);
 
@@ -373,7 +371,7 @@ function BalanceItem({ balance }: { balance: UserTokenBalance }) {
     <Item size="sm" asChild>
       <button
         className="w-full text-left hover:bg-accent"
-        onClick={() => console.log("Selected:", balance.name)}
+        onClick={() => onSelect?.(balance)}
       >
         <ItemMedia variant="image">
           <div className="relative w-10 h-10">

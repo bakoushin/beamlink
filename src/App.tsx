@@ -5,27 +5,26 @@ import {
   WalletProvider,
 } from "@solana/wallet-adapter-react";
 import {
-  WalletModalProvider,
-  WalletMultiButton,
-} from "@solana/wallet-adapter-react-ui";
-import {
   LedgerWalletAdapter,
   PhantomWalletAdapter,
   SolflareWalletAdapter,
   UnsafeBurnerWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 import "./App.css";
-import { Button } from "@/components/ui/button";
-import { TokenSelector } from "./TokenSelector";
+import { TokenInput } from "@/components/TokenInput";
 import {
   useQuery,
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { topTokensQueryOptions } from "@/queries/tokens";
+import { WalletModalProvider } from "@/hooks/use-wallet-modal";
+import { WalletModal } from "@/components/wallet/WalletModal";
+import { WalletMultiButton } from "@/components/wallet/WalletMultiButton";
+import type { Token } from "@/types/token";
+import type { UserTokenBalance } from "@/queries";
 
 function App() {
-  const [count, setCount] = useState(0);
   const queryClient = new QueryClient();
 
   const network = WalletAdapterNetwork.Mainnet;
@@ -55,7 +54,8 @@ function App() {
       <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets} autoConnect>
           <WalletModalProvider>
-            <AppContent count={count} setCount={setCount} />
+            <WalletModal />
+            <AppContent />
           </WalletModalProvider>
         </WalletProvider>
       </ConnectionProvider>
@@ -63,27 +63,37 @@ function App() {
   );
 }
 
-function AppContent({
-  count,
-  setCount,
-}: {
-  count: number;
-  setCount: React.Dispatch<React.SetStateAction<number>>;
-}) {
+function AppContent() {
   // Prefetch top tokens on app mount
   useQuery(topTokensQueryOptions);
 
+  const [tokenAmount, setTokenAmount] = useState("");
+  const [selectedToken, setSelectedToken] = useState<
+    Token | UserTokenBalance | null
+  >(null);
+
   return (
-    <>
-      <WalletMultiButton />
-      <TokenSelector />
-      <div className="flex flex-wrap items-center gap-2 md:flex-row">
-        <Button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </Button>
-        <TokenSelector />
+    <div className="min-h-screen flex flex-col items-center p-8 gap-8">
+      <div className="flex flex-col items-center gap-4 w-full max-w-md">
+        <WalletMultiButton />
+
+        <div className="w-full">
+          <h2 className="text-xl font-semibold mb-4">Token Input Demo</h2>
+          <TokenInput
+            value={tokenAmount}
+            onValueChange={setTokenAmount}
+            selectedToken={selectedToken}
+            onTokenSelect={setSelectedToken}
+          />
+        </div>
+
+        {selectedToken && tokenAmount && (
+          <div className="text-sm text-muted-foreground">
+            You entered: {tokenAmount} {selectedToken.symbol}
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }
 
