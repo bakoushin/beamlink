@@ -17,13 +17,13 @@ export function TransactionDialog({ open, onClose }: TransactionDialogProps) {
       <div className="absolute inset-0 bg-black/50" />
 
       {/* Dialog */}
-      <div className="relative bg-white rounded-lg shadow-lg p-8 w-64 h-56 mx-4 flex flex-col items-center justify-center">
+      <div className="relative bg-background border rounded-lg shadow-lg p-8 w-64 h-56 mx-4 flex flex-col items-center justify-center">
         {/* Close button */}
         <Button
           variant="ghost"
           size="sm"
           onClick={onClose}
-          className="absolute top-4 right-4 h-8 w-8 p-0 hover:bg-gray-100"
+          className="absolute top-4 right-4 h-8 w-8 p-0"
         >
           <X className="h-4 w-4" />
         </Button>
@@ -35,7 +35,7 @@ export function TransactionDialog({ open, onClose }: TransactionDialogProps) {
 
           {/* Text */}
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-foreground">
               Confirm transaction in your wallet
             </h3>
           </div>

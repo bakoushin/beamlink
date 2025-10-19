@@ -236,7 +236,7 @@ export function TokenInput({
             disabled={disabled || !selectedToken}
             className={`
               text-3xl font-semibold bg-transparent border-none outline-none 
-              w-full placeholder:text-muted-foreground/40
+              w-full placeholder:text-foreground/60
               disabled:cursor-not-allowed py-6
               ${hasInsufficientBalance ? "text-red-600" : ""}
               ${!selectedToken ? "cursor-pointer" : ""}
