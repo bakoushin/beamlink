@@ -2,6 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 import type { Token, TopTokensResponse } from "@/types/token";
 
 const JUPITER_API_BASE = "https://lite-api.jup.ag";
+const SOL_MINT_ADDRESS = "So11111111111111111111111111111111111111112";
 
 /**
  * Filters tokens to only include those safe for regular users
@@ -55,4 +56,34 @@ export const topTokensQueryOptions = queryOptions({
   refetchOnMount: false, // Don't refetch on component remount
   refetchOnReconnect: false, // Don't refetch when network reconnects
   refetchInterval: false, // Don't refetch on an interval
+});
+
+/**
+ * Fetches SOL token data with current price
+ */
+async function fetchSolToken(): Promise<Token> {
+  const response = await fetch(
+    `${JUPITER_API_BASE}/tokens/v2/search?query=${SOL_MINT_ADDRESS}`
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch SOL token data: ${response.statusText}`);
+  }
+
+  const tokens: Token[] = await response.json();
+  const solToken = tokens.find((token) => token.id === SOL_MINT_ADDRESS);
+
+  if (!solToken) {
+    throw new Error("SOL token not found in API response");
+  }
+
+  return solToken;
+}
+
+export const solTokenQueryOptions = queryOptions({
+  queryKey: ["tokens", "sol", SOL_MINT_ADDRESS],
+  queryFn: fetchSolToken,
+  staleTime: 1000 * 60, // Consider data stale after 1 minute
+  refetchOnWindowFocus: true, // Refetch when window regains focus to get latest price
+  refetchInterval: 1000 * 60, // Refetch every minute
 });

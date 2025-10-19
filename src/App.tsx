@@ -18,7 +18,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import { topTokensQueryOptions } from "@/queries/tokens";
+import { topTokensQueryOptions, solTokenQueryOptions } from "@/queries/tokens";
 import { userTokenBalancesQueryOptions } from "@/queries/balances";
 import { WalletModalProvider, useWalletModal } from "@/hooks/use-wallet-modal";
 import { WalletMultiButton } from "@/components/wallet/WalletMultiButton";
@@ -80,6 +80,9 @@ function App() {
 function AppContent() {
   // Prefetch top tokens on app mount
   useQuery(topTokensQueryOptions);
+
+  // Fetch SOL token data with price
+  const { data: solTokenData } = useQuery(solTokenQueryOptions);
 
   // Wallet connection state
   const { publicKey, wallet } = useWallet();
@@ -179,6 +182,40 @@ function AppContent() {
   } | null>(null);
   const [isWaitingForWallet, setIsWaitingForWallet] = useState(false);
   const [claimResult, setClaimResult] = useState<string | null>(null);
+
+  // Update default SOL token with real price data from API when available
+  useEffect(() => {
+    if (
+      solTokenData &&
+      selectedToken &&
+      "id" in selectedToken &&
+      selectedToken.id === "So11111111111111111111111111111111111111112" &&
+      selectedToken.usdPrice === 0
+    ) {
+      // Update selected token with real token data from API
+      setSelectedToken(solTokenData);
+    }
+  }, [solTokenData, selectedToken]);
+
+  // Update default SOL token with user balance data when wallet is connected
+  useEffect(() => {
+    if (
+      userBalances &&
+      selectedToken &&
+      "id" in selectedToken &&
+      selectedToken.id === "So11111111111111111111111111111111111111112"
+    ) {
+      // Find SOL in user balances
+      const solBalance = userBalances.find(
+        (balance) =>
+          balance.address === "So11111111111111111111111111111111111111112"
+      );
+      if (solBalance) {
+        // Update selected token with real balance data (which includes price and balance)
+        setSelectedToken(solBalance);
+      }
+    }
+  }, [userBalances, selectedToken]);
 
   const { deposit, isLoading, error, cancelTransaction } = useDeposit();
   const {

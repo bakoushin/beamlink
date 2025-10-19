@@ -35,19 +35,7 @@ export function TokenInput({
   const [imageLoaded, setImageLoaded] = React.useState(false);
   const [imageError, setImageError] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
-
-  // Reset image state when token changes
-  React.useEffect(() => {
-    setImageLoaded(false);
-    setImageError(false);
-  }, [selectedToken]);
-
-  // Clear value when token changes
-  React.useEffect(() => {
-    if (selectedToken) {
-      onValueChange("");
-    }
-  }, [selectedToken, onValueChange]);
+  const previousTokenIconRef = React.useRef<string | null>(null);
 
   // Get token icon - handle both Token and UserTokenBalance types
   const tokenIcon = selectedToken
@@ -55,6 +43,22 @@ export function TokenInput({
       ? selectedToken.icon
       : selectedToken.image
     : null;
+
+  // Reset image state only when the icon URL actually changes
+  React.useEffect(() => {
+    if (tokenIcon !== previousTokenIconRef.current) {
+      setImageLoaded(false);
+      setImageError(false);
+      previousTokenIconRef.current = tokenIcon;
+    }
+  }, [tokenIcon]);
+
+  // Clear value when token changes
+  React.useEffect(() => {
+    if (selectedToken) {
+      onValueChange("");
+    }
+  }, [selectedToken, onValueChange]);
 
   const tokenSymbol = selectedToken?.symbol ?? null;
   const tokenDecimals = selectedToken?.decimals ?? 9;
