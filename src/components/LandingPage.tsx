@@ -388,19 +388,6 @@ export function LandingPage({
                 <CheckCircle className="w-6 h-6 text-green-600 mt-1 flex-shrink-0" />
                 <div>
                   <h3 className="font-semibold mb-1">
-                    No wallet addresses needed
-                  </h3>
-                  <p className="text-muted-foreground text-sm">
-                    Send tokens without asking recipients for their wallet
-                    addresses.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <CheckCircle className="w-6 h-6 text-green-600 mt-1 flex-shrink-0" />
-                <div>
-                  <h3 className="font-semibold mb-1">
                     Multi-channel distribution
                   </h3>
                   <p className="text-muted-foreground text-sm">
@@ -416,6 +403,19 @@ export function LandingPage({
                   <p className="text-muted-foreground text-sm">
                     Recipients can claim tokens immediately using any Solana
                     wallet.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <CheckCircle className="w-6 h-6 text-green-600 mt-1 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold mb-1">
+                    No wallet addresses needed
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Send tokens without asking recipients for their wallet
+                    addresses.
                   </p>
                 </div>
               </div>
