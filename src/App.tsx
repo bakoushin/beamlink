@@ -182,6 +182,7 @@ function AppContent() {
     privateKey: string;
     amount: string;
     tokenSymbol: string;
+    tokenIcon: string;
   } | null>(null);
   const [isWaitingForWallet, setIsWaitingForWallet] = useState(false);
   const [claimResult, setClaimResult] = useState<string | null>(null);
@@ -243,6 +244,16 @@ function AppContent() {
         tokenAmount,
         tokenSymbol: selectedToken.symbol,
         selectedToken,
+        tokenIcon: selectedToken.icon || (selectedToken as any).image,
+        hasIcon: !!selectedToken.icon,
+        allTokenKeys: Object.keys(selectedToken),
+        possibleIconFields: {
+          icon: selectedToken.icon,
+          image: selectedToken.image,
+          logo: selectedToken.logo,
+          logoURI: selectedToken.logoURI,
+          imageUrl: selectedToken.imageUrl,
+        },
       });
 
       setDepositResult({
@@ -251,6 +262,7 @@ function AppContent() {
         privateKey: result.privateKey,
         amount: tokenAmount,
         tokenSymbol: selectedToken.symbol,
+        tokenIcon: selectedToken.icon || (selectedToken as any).image || null,
       });
       // Reset form after successful deposit
       setTokenAmount("");
@@ -518,9 +530,17 @@ function AppContent() {
                   <span className="text-sm font-medium text-gray-700">
                     Amount:
                   </span>
-                  <span className="text-lg font-semibold">
-                    {withdrawInfo.amount} {withdrawInfo.token?.symbol}
-                  </span>
+                  <div className="text-lg font-semibold flex items-center gap-2">
+                    <span>{withdrawInfo.amount}</span>
+                    {withdrawInfo.token?.icon && (
+                      <img
+                        src={withdrawInfo.token.icon}
+                        alt={withdrawInfo.token?.symbol || "Token"}
+                        className="w-6 h-6 rounded-full"
+                      />
+                    )}
+                    <span>{withdrawInfo.token?.symbol}</span>
+                  </div>
                 </div>
 
                 {withdrawInfo.usdValue && (
@@ -677,6 +697,43 @@ function AppContent() {
             </div>
 
             <div className="w-full space-y-3">
+              {/* Token information */}
+              <div className="bg-white p-4 rounded-lg border">
+                <div className="flex items-center justify-center gap-3">
+                  <div className="text-lg text-gray-900 flex items-center gap-2">
+                    <span className="font-semibold">
+                      {depositResult?.amount}
+                    </span>
+                    {depositResult?.tokenIcon &&
+                      depositResult.tokenIcon !== null && (
+                        <img
+                          src={depositResult.tokenIcon}
+                          alt={depositResult?.tokenSymbol || "Token"}
+                          className="w-6 h-6 rounded-full"
+                          onLoad={() =>
+                            console.log(
+                              "Token image loaded:",
+                              depositResult.tokenIcon
+                            )
+                          }
+                          onError={() =>
+                            console.log(
+                              "Token image failed to load:",
+                              depositResult.tokenIcon
+                            )
+                          }
+                        />
+                      )}
+                    {(!depositResult?.tokenIcon ||
+                      depositResult?.tokenIcon === null) &&
+                      console.log("No token icon available:", depositResult)}
+                    <span className="font-normal">
+                      {depositResult?.tokenSymbol}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <div className="bg-gray-100 p-3 rounded-lg border border-gray-200">
                 <div
                   className="flex items-center space-x-2 cursor-pointer hover:bg-gray-200 rounded-lg px-3 py-2 transition-colors"
