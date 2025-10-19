@@ -103,7 +103,7 @@ function AppContent() {
   }, []);
 
   const [tokenAmount, setTokenAmount] = useState("");
-  
+
   // Default SOL token object
   const defaultSolToken: Token = {
     id: "So11111111111111111111111111111111111111112",
@@ -116,11 +116,11 @@ function AppContent() {
     tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
     firstPool: {
       id: "",
-      createdAt: ""
+      createdAt: "",
     },
     holderCount: 0,
     audit: {
-      topHoldersPercentage: 0
+      topHoldersPercentage: 0,
     },
     organicScore: 0,
     organicScoreLabel: "",
@@ -137,7 +137,7 @@ function AppContent() {
       numBuys: 0,
       numSells: 0,
       numTraders: 0,
-      numNetBuyers: 0
+      numNetBuyers: 0,
     },
     stats1h: {
       priceChange: 0,
@@ -146,7 +146,7 @@ function AppContent() {
       numBuys: 0,
       numSells: 0,
       numTraders: 0,
-      numNetBuyers: 0
+      numNetBuyers: 0,
     },
     stats6h: {
       priceChange: 0,
@@ -155,7 +155,7 @@ function AppContent() {
       numBuys: 0,
       numSells: 0,
       numTraders: 0,
-      numNetBuyers: 0
+      numNetBuyers: 0,
     },
     stats24h: {
       priceChange: 0,
@@ -164,11 +164,11 @@ function AppContent() {
       numBuys: 0,
       numSells: 0,
       numTraders: 0,
-      numNetBuyers: 0
+      numNetBuyers: 0,
     },
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
-  
+
   const [selectedToken, setSelectedToken] = useState<
     Token | UserTokenBalance | null
   >(defaultSolToken);
@@ -620,24 +620,32 @@ function AppContent() {
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
           <WalletMultiButton />
 
-          <div className="w-full">
-            <h2 className="text-xl font-semibold mb-4">Token Deposit</h2>
-            <TokenInput
-              value={tokenAmount}
-              onValueChange={setTokenAmount}
-              selectedToken={selectedToken}
-              onTokenSelect={setSelectedToken}
-              hasInsufficientBalance={hasInsufficientBalance()}
-            />
-          </div>
-
-          <Button
-            onClick={handleButtonClick}
-            disabled={!isWalletConnected ? false : !canDeposit || isLoading}
-            className="w-full"
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleButtonClick();
+            }}
+            className="w-full flex flex-col gap-4"
           >
-            {getButtonText()}
-          </Button>
+            <div className="w-full">
+              <h2 className="text-xl font-semibold mb-4">Token Deposit</h2>
+              <TokenInput
+                value={tokenAmount}
+                onValueChange={setTokenAmount}
+                selectedToken={selectedToken}
+                onTokenSelect={setSelectedToken}
+                hasInsufficientBalance={hasInsufficientBalance()}
+              />
+            </div>
+
+            <Button
+              type="submit"
+              disabled={!isWalletConnected ? false : !canDeposit || isLoading}
+              className="w-full"
+            >
+              {getButtonText()}
+            </Button>
+          </form>
 
           {error && (
             <div className="text-sm text-red-500 bg-red-50 p-3 rounded-lg w-full">
