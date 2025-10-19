@@ -33,6 +33,7 @@ import {
   Share,
   AlertCircle,
   DollarSign,
+  Check,
 } from "lucide-react";
 import type { Token } from "@/types/token";
 import type { UserTokenBalance } from "@/queries";
@@ -179,9 +180,12 @@ function AppContent() {
     signature: string;
     depositId: string;
     privateKey: string;
+    amount: string;
+    tokenSymbol: string;
   } | null>(null);
   const [isWaitingForWallet, setIsWaitingForWallet] = useState(false);
   const [claimResult, setClaimResult] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   // Update default SOL token with real price data from API when available
   useEffect(() => {
@@ -234,10 +238,19 @@ function AppContent() {
     setIsWaitingForWallet(true);
     try {
       const result = await deposit(selectedToken, tokenAmount);
+
+      console.log("Setting deposit result with:", {
+        tokenAmount,
+        tokenSymbol: selectedToken.symbol,
+        selectedToken,
+      });
+
       setDepositResult({
         signature: result.signature,
         depositId: result.depositId,
         privateKey: result.privateKey,
+        amount: tokenAmount,
+        tokenSymbol: selectedToken.symbol,
       });
       // Reset form after successful deposit
       setTokenAmount("");
@@ -286,30 +299,53 @@ function AppContent() {
   };
 
   const shareDepositLink = async (link: string) => {
-    const shareData = {
-      title: "Deposit Link",
-      text: "Check out this deposit link",
+    // Get the token amount and symbol from the deposit result
+    const amount = depositResult?.amount || "0";
+    const tokenSymbol = depositResult?.tokenSymbol || "tokens";
+
+    const shareText = `Grab your ${amount} ${tokenSymbol}! ${link}`;
+
+    console.log("Share text:", shareText);
+
+    // Try to create share data with just text (some platforms ignore text when URL is present)
+    const shareDataTextOnly = {
+      text: shareText,
+    };
+
+    const shareDataWithUrl = {
+      text: shareText,
       url: link,
     };
 
     try {
+      // First try with text only (some platforms work better this way)
       if (
         navigator.share &&
         navigator.canShare &&
-        navigator.canShare(shareData)
+        navigator.canShare(shareDataTextOnly)
       ) {
-        await navigator.share(shareData);
-      } else {
-        // Fallback: copy to clipboard
-        await copyToClipboard(link);
-        // You could show a toast notification here
-        alert("Link copied to clipboard!");
+        await navigator.share(shareDataTextOnly);
+        return;
       }
+
+      // If that doesn't work, try with URL
+      if (
+        navigator.share &&
+        navigator.canShare &&
+        navigator.canShare(shareDataWithUrl)
+      ) {
+        await navigator.share(shareDataWithUrl);
+        return;
+      }
+
+      // Fallback: copy to clipboard
+      await copyToClipboard(shareText);
+      alert("Share text copied to clipboard!");
     } catch (err) {
       console.error("Failed to share:", err);
       // Fallback: copy to clipboard
-      await copyToClipboard(link);
-      alert("Link copied to clipboard!");
+      await copyToClipboard(shareText);
+      alert("Share text copied to clipboard!");
     }
   };
 
@@ -576,6 +612,16 @@ function AppContent() {
   if (depositResult) {
     const depositLink = `${window.location.origin}/#/${depositResult.privateKey}`;
 
+    const copyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(depositLink);
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 1500);
+      } catch (err) {
+        console.error("Failed to copy to clipboard:", err);
+      }
+    };
+
     return (
       <div className="min-h-screen flex flex-col items-center p-8 gap-8">
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
@@ -589,60 +635,56 @@ function AppContent() {
 
             <div className="text-center">
               <h3 className="text-lg font-semibold text-green-900 mb-2">
-                Deposit Created!
+                BeamLink Created!
               </h3>
-              <p className="text-green-700 mb-4">
-                Your deposit has been successfully created
-              </p>
+              <p className="text-green-700 mb-4">Now you can share it</p>
             </div>
 
             <div className="w-full space-y-3">
               <div className="bg-white p-3 rounded-lg border">
-                <label className="text-sm font-medium text-gray-700 block mb-2">
-                  Deposit Link:
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={depositLink}
-                    readOnly
-                    className="flex-1 text-xs bg-gray-50 p-2 rounded border"
-                  />
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => copyToClipboard(depositLink)}
-                    className="flex items-center gap-1"
-                  >
-                    <Copy className="h-4 w-4" />
-                    Copy
-                  </Button>
+                <div
+                  className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors"
+                  onClick={copyLink}
+                >
+                  <span className="font-mono text-sm text-gray-600 break-all flex-1">
+                    {depositLink}
+                  </span>
+                  {linkCopied ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Copy className="h-4 w-4 text-gray-400" />
+                  )}
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={() => shareDepositLink(depositLink)}
+                  className="w-full flex items-center gap-2 py-3"
+                >
+                  <Share className="h-5 w-5" />
+                  Share BeamLink
+                </Button>
+              </div>
+
+              <div className="flex flex-col gap-2 mt-4">
                 <Button
                   onClick={() => window.open(depositLink, "_blank")}
-                  variant="outline"
-                  className="flex-1 flex items-center gap-2"
+                  variant="secondary"
+                  className="w-full flex items-center gap-2"
                 >
                   <ExternalLink className="h-4 w-4" />
                   Open Link
                 </Button>
 
                 <Button
-                  onClick={() => shareDepositLink(depositLink)}
-                  variant="outline"
-                  className="flex-1 flex items-center gap-2"
+                  onClick={handleNewDeposit}
+                  variant="secondary"
+                  className="w-full"
                 >
-                  <Share className="h-4 w-4" />
-                  Share
+                  Create New BeamLink
                 </Button>
               </div>
-
-              <Button onClick={handleNewDeposit} className="w-full">
-                Create New Deposit
-              </Button>
             </div>
           </div>
         </div>
