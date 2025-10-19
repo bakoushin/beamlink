@@ -4,37 +4,61 @@ const words = ["SMS", "Telegram", "WhatsApp", "iMessage", "gift card"];
 
 export function AnimatedText() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setIsAnimating(true);
+      setIsTransitioning(true);
       setTimeout(() => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % words.length);
-        setIsAnimating(false);
-      }, 300); // Half of the transition duration
-    }, 2000); // Change word every 2 seconds
+        setIsTransitioning(false);
+      }, 500); // Match the CSS transition duration
+    }, 2500); // Change word every 2.5 seconds
 
     return () => clearInterval(interval);
   }, []);
 
+  const nextIndex = (currentIndex + 1) % words.length;
+
   return (
     <div className="relative inline-block min-h-[1.2em]">
-      <span
-        className={`inline-block transition-all duration-500 ${
-          isAnimating
-            ? "opacity-0 blur-sm translate-y-2"
-            : "opacity-100 blur-0 translate-y-0"
-        }`}
-        style={{
-          background: "linear-gradient(135deg, #00FFA3, #FFE500, #DC1FFF)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-        }}
-      >
-        {words[currentIndex]}
-      </span>
+      <div className="relative flex justify-center items-center">
+        {/* Current word */}
+        <span
+          key={`current-${currentIndex}`}
+          className={`inline-block transition-all duration-500 ease-in-out ${
+            isTransitioning
+              ? "opacity-0 -translate-y-full"
+              : "opacity-100 translate-y-0"
+          }`}
+          style={{
+            background: "linear-gradient(135deg, #00FFA3, #FFE500, #DC1FFF)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
+          {words[currentIndex]}
+        </span>
+
+        {/* Next word */}
+        <span
+          key={`next-${nextIndex}`}
+          className={`inline-block transition-all duration-500 ease-in-out absolute ${
+            isTransitioning
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-full"
+          }`}
+          style={{
+            background: "linear-gradient(135deg, #00FFA3, #FFE500, #DC1FFF)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
+          {words[nextIndex]}
+        </span>
+      </div>
     </div>
   );
 }
