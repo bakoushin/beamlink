@@ -17,7 +17,7 @@ export function TransactionDialog({ open, onClose }: TransactionDialogProps) {
       <div className="absolute inset-0 bg-black/50" />
 
       {/* Dialog */}
-      <div className="relative bg-white rounded-lg shadow-lg p-8 max-w-sm w-full mx-4">
+      <div className="relative bg-white rounded-lg shadow-lg p-8 w-64 h-56 mx-4 flex flex-col items-center justify-center">
         {/* Close button */}
         <Button
           variant="ghost"
