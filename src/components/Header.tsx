@@ -36,7 +36,7 @@ export function Header({ onLogoClick }: { onLogoClick: () => void }) {
           </div>
         </div>
       </header>
-      <div className="h-px bg-gradient-to-r from-[#00FFA3] via-[#FFE500] to-[#DC1FFF]" />
+      <div className="h-0.5 bg-secondary" />
     </div>
   );
 }
