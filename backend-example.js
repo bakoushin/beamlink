@@ -248,6 +248,20 @@ app.post("/api/claim", async (req, res) => {
       }
     }
 
+    // Check relayer balance before processing
+    const relayerBalance = await connection.getBalance(
+      relayerKeypair.publicKey
+    );
+    console.log("Relayer balance (lamports):", relayerBalance);
+
+    if (relayerBalance < 5000) {
+      // Minimum balance for transaction fees
+      return res.status(400).json({
+        success: false,
+        error: "Insufficient relayer balance for transaction fees",
+      });
+    }
+
     // The transaction should already have the relayer as fee payer
     // (frontend should fetch relayer public key and set it before signing)
 
@@ -262,12 +276,79 @@ app.post("/api/claim", async (req, res) => {
       }))
     );
 
+    // Debug: Check vault accounts before simulation
+    const [vaultAuthority] = PublicKey.findProgramAddressSync(
+      [Buffer.from("vault-auth")],
+      PROGRAM_ID
+    );
+
+    const vaultAuthInfo = await connection.getAccountInfo(vaultAuthority);
+    console.log("Vault Authority exists:", !!vaultAuthInfo);
+
+    if (!isSol && mintAddress) {
+      const {
+        getAssociatedTokenAddress,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+      } = await import("@solana/spl-token");
+
+      const vaultAta = await getAssociatedTokenAddress(
+        new PublicKey(mintAddress),
+        vaultAuthority,
+        true, // allow PDA
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+
+      console.log("Vault ATA:", vaultAta.toBase58());
+
+      const vaultAtaInfo = await connection.getAccountInfo(vaultAta);
+      console.log("Vault ATA exists:", !!vaultAtaInfo);
+
+      if (vaultAtaInfo) {
+        try {
+          const tokenBalance = await connection.getTokenAccountBalance(
+            vaultAta
+          );
+          console.log("Vault ATA balance:", tokenBalance.value.amount);
+        } catch (error) {
+          console.log("Error getting vault balance:", error.message);
+        }
+      } else {
+        console.log("Vault ATA does not exist - this might be the issue!");
+      }
+    }
+
+    // Simulate the transaction first to catch errors early
+    try {
+      const simulation = await connection.simulateTransaction(partialTx);
+
+      if (simulation.value.err) {
+        console.error("Transaction simulation failed:", simulation.value.err);
+        return res.status(400).json({
+          success: false,
+          error: `Transaction simulation failed: ${JSON.stringify(
+            simulation.value.err
+          )}`,
+        });
+      }
+
+      console.log("Transaction simulation successful");
+    } catch (simError) {
+      console.error("Simulation error:", simError);
+      return res.status(400).json({
+        success: false,
+        error: `Simulation error: ${simError.message}`,
+      });
+    }
+
     // Send the fully signed transaction
     const signature = await connection.sendRawTransaction(
       partialTx.serialize(),
       {
         skipPreflight: false,
         preflightCommitment: "confirmed",
+        maxRetries: 3,
       }
     );
 

@@ -350,24 +350,25 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
         const claimInstruction = new TransactionInstruction({
           programId: PROGRAM_ID,
           keys: [
-            { pubkey: publicKey, isSigner: false, isWritable: true },
-            { pubkey: mintAddress, isSigner: false, isWritable: false },
-            { pubkey: userAta, isSigner: false, isWritable: true },
-            { pubkey: vaultAuthority, isSigner: false, isWritable: false },
-            { pubkey: vaultAta, isSigner: false, isWritable: true },
-            { pubkey: depositId, isSigner: true, isWritable: false },
-            { pubkey: depositPda, isSigner: false, isWritable: true },
+            { pubkey: relayerPublicKey, isSigner: true, isWritable: true }, // payer (relayer)
+            { pubkey: mintAddress, isSigner: false, isWritable: false }, // mint
+            { pubkey: vaultAuthority, isSigner: false, isWritable: false }, // vault_authority
+            { pubkey: vaultAta, isSigner: false, isWritable: true }, // vault_ata
+            { pubkey: depositId, isSigner: true, isWritable: false }, // deposit_id
+            { pubkey: depositPda, isSigner: false, isWritable: true }, // deposit
+            { pubkey: publicKey, isSigner: false, isWritable: true }, // recipient
+            { pubkey: userAta, isSigner: false, isWritable: true }, // recipient_ata
             {
               pubkey: SystemProgram.programId,
               isSigner: false,
               isWritable: false,
-            },
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+            }, // system_program
+            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // token_program
             {
               pubkey: ASSOCIATED_TOKEN_PROGRAM_ID,
               isSigner: false,
               isWritable: false,
-            },
+            }, // associated_token_program
           ],
           data: Buffer.from([183, 18, 70, 156, 148, 109, 161, 34]), // withdraw discriminator
         });
