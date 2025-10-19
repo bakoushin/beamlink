@@ -21,11 +21,11 @@ import {
 import { topTokensQueryOptions, solTokenQueryOptions } from "@/queries/tokens";
 import { userTokenBalancesQueryOptions } from "@/queries/balances";
 import { WalletModalProvider, useWalletModal } from "@/hooks/use-wallet-modal";
-import { WalletMultiButton } from "@/components/wallet/WalletMultiButton";
 import { useDeposit } from "@/hooks/use-deposit";
 import { useWithdraw } from "@/hooks/use-withdraw";
 import { Button } from "@/components/ui/button";
 import { TransactionDialog } from "@/components/TransactionDialog";
+import { Header } from "@/components/Header";
 import {
   CheckCircle,
   Copy,
@@ -297,6 +297,15 @@ function AppContent() {
     window.history.replaceState(null, "", window.location.pathname);
   };
 
+  const handleLogoClick = () => {
+    setPrivateKey(undefined);
+    setDepositResult(null);
+    setClaimResult(null);
+    setTokenAmount("");
+    setSelectedToken(defaultSolToken);
+    window.history.replaceState(null, "", window.location.pathname);
+  };
+
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -408,17 +417,20 @@ function AppContent() {
     // Show loading state while fetching withdraw info
     if (isWithdrawLoading) {
       return (
-        <div className="min-h-screen flex flex-col items-center p-8 gap-8">
-          <div className="flex flex-col items-center gap-4 w-full max-w-md">
-            <WalletMultiButton />
-
-            <div className="flex flex-col items-center gap-4 p-8 bg-blue-50 rounded-lg w-full">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-blue-900">
-                  Loading Deposit Info
-                </h3>
-                <p className="text-blue-700">Fetching deposit information...</p>
+        <div className="min-h-screen flex flex-col">
+          <Header onLogoClick={handleLogoClick} />
+          <div className="flex flex-col items-center p-8 mt-8 gap-8 flex-1 w-full">
+            <div className="flex flex-col items-center gap-4 w-full max-w-md">
+              <div className="flex flex-col items-center gap-4 p-8 bg-blue-50 rounded-lg w-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-blue-900">
+                    Loading Deposit Info
+                  </h3>
+                  <p className="text-blue-700">
+                    Fetching deposit information...
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -429,25 +441,26 @@ function AppContent() {
     // Show error state if withdraw info failed to load
     if (withdrawError || (withdrawInfo && withdrawInfo.error)) {
       return (
-        <div className="min-h-screen flex flex-col items-center p-8 gap-8">
-          <div className="flex flex-col items-center gap-4 w-full max-w-md">
-            <WalletMultiButton />
-
-            <div className="flex flex-col items-center gap-4 p-8 bg-red-50 rounded-lg w-full">
-              <AlertCircle className="h-16 w-16 text-red-600" />
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-red-900 mb-2">
-                  Invalid Deposit Link
-                </h3>
-                <p className="text-red-700 mb-4">
-                  {withdrawError ||
-                    withdrawInfo?.error ||
-                    "This deposit link is invalid or has expired."}
-                </p>
+        <div className="min-h-screen flex flex-col">
+          <Header onLogoClick={handleLogoClick} />
+          <div className="flex flex-col items-center p-8 mt-8 gap-8 flex-1 w-full">
+            <div className="flex flex-col items-center gap-4 w-full max-w-md">
+              <div className="flex flex-col items-center gap-4 p-8 bg-red-50 rounded-lg w-full">
+                <AlertCircle className="h-16 w-16 text-red-600" />
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-red-900 mb-2">
+                    Invalid Deposit Link
+                  </h3>
+                  <p className="text-red-700 mb-4">
+                    {withdrawError ||
+                      withdrawInfo?.error ||
+                      "This deposit link is invalid or has expired."}
+                  </p>
+                </div>
+                <Button onClick={handleNewWithdraw} variant="outline">
+                  Create New Deposit
+                </Button>
               </div>
-              <Button onClick={handleNewWithdraw} variant="outline">
-                Create New Deposit
-              </Button>
             </div>
           </div>
         </div>
@@ -457,52 +470,53 @@ function AppContent() {
     // Show claim success state
     if (claimResult) {
       return (
-        <div className="min-h-screen flex flex-col items-center p-8 gap-8">
-          <div className="flex flex-col items-center gap-4 w-full max-w-md">
-            <WalletMultiButton />
-
-            <div className="flex flex-col items-center gap-4 p-8 bg-green-50 rounded-lg w-full">
-              <div className="relative">
-                <CheckCircle className="h-16 w-16 text-green-600 animate-pulse" />
-                <div className="absolute inset-0 h-16 w-16 border-4 border-green-200 rounded-full animate-ping"></div>
-              </div>
-
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-green-900 mb-2">
-                  Successfully Claimed!
-                </h3>
-                <p className="text-green-700 mb-4">
-                  Your deposit has been claimed to your wallet
-                </p>
-              </div>
-
-              <div className="w-full space-y-3">
-                <div className="bg-white p-3 rounded-lg border">
-                  <label className="text-sm font-medium text-gray-700 block mb-2">
-                    Transaction Signature:
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={claimResult}
-                      readOnly
-                      className="flex-1 text-xs bg-gray-50 p-2 rounded border"
-                    />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => copyToClipboard(claimResult)}
-                      className="flex items-center gap-1"
-                    >
-                      <Copy className="h-4 w-4" />
-                      Copy
-                    </Button>
-                  </div>
+        <div className="min-h-screen flex flex-col">
+          <Header onLogoClick={handleLogoClick} />
+          <div className="flex flex-col items-center p-8 mt-8 gap-8 flex-1 w-full">
+            <div className="flex flex-col items-center gap-4 w-full max-w-md">
+              <div className="flex flex-col items-center gap-4 p-8 bg-green-50 rounded-lg w-full">
+                <div className="relative">
+                  <CheckCircle className="h-16 w-16 text-green-600 animate-pulse" />
+                  <div className="absolute inset-0 h-16 w-16 border-4 border-green-200 rounded-full animate-ping"></div>
                 </div>
 
-                <Button onClick={handleNewWithdraw} className="w-full">
-                  Create New Deposit
-                </Button>
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-green-900 mb-2">
+                    Successfully Claimed!
+                  </h3>
+                  <p className="text-green-700 mb-4">
+                    Your deposit has been claimed to your wallet
+                  </p>
+                </div>
+
+                <div className="w-full space-y-3">
+                  <div className="bg-white p-3 rounded-lg border">
+                    <label className="text-sm font-medium text-gray-700 block mb-2">
+                      Transaction Signature:
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={claimResult}
+                        readOnly
+                        className="flex-1 text-xs bg-gray-50 p-2 rounded border"
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copyToClipboard(claimResult)}
+                        className="flex items-center gap-1"
+                      >
+                        <Copy className="h-4 w-4" />
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Button onClick={handleNewWithdraw} className="w-full">
+                    Create New Deposit
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -513,76 +527,78 @@ function AppContent() {
     // Show withdraw interface
     if (withdrawInfo) {
       return (
-        <div className="min-h-screen flex flex-col items-center p-8 gap-8">
-          <div className="flex flex-col items-center gap-4 w-full max-w-md">
-            <WalletMultiButton />
+        <div className="min-h-screen flex flex-col">
+          <Header onLogoClick={handleLogoClick} />
+          <div className="flex flex-col items-center p-8 mt-8 gap-8 flex-1 w-full">
+            <div className="flex flex-col items-center gap-4 w-full max-w-md">
+              <div className="w-full">
+                <div className="p-8 rounded-lg border relative aspect-square flex flex-col justify-center items-center max-w-full overflow-hidden">
+                  {/* Status Badge - Top Right Corner */}
+                  <div className="absolute top-4 right-4">
+                    <span
+                      className={`text-xs font-medium px-3 py-1 rounded-full ${
+                        withdrawInfo.isClaimed
+                          ? "bg-red-100 text-red-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {withdrawInfo.isClaimed
+                        ? "Already Claimed"
+                        : "Available to Claim"}
+                    </span>
+                  </div>
 
-            <div className="w-full">
-              <h2 className="text-xl font-semibold mb-4">Claim BeamLink</h2>
-
-              <div className="p-8 rounded-lg border relative aspect-square flex flex-col justify-center items-center max-w-full overflow-hidden">
-                {/* Status Badge - Top Right Corner */}
-                <div className="absolute top-4 right-4">
-                  <span
-                    className={`text-xs font-medium px-3 py-1 rounded-full ${
-                      withdrawInfo.isClaimed
-                        ? "bg-red-100 text-red-800"
-                        : "bg-green-100 text-green-800"
-                    }`}
-                  >
-                    {withdrawInfo.isClaimed
-                      ? "Already Claimed"
-                      : "Available to Claim"}
-                  </span>
+                  {/* BeamLink Value Display - Inside Card */}
+                  <div className="text-center">
+                    <div
+                      className="text-5xl font-black text-gray-900 mb-1 px-6 py-4 rounded-xl break-all overflow-hidden"
+                      style={{ fontFamily: "'IBM Plex Mono', monospace" }}
+                    >
+                      {withdrawInfo.amount}
+                    </div>
+                    <div className="text-xl font-semibold text-gray-600 flex items-center justify-center gap-2">
+                      {withdrawInfo.token?.icon && (
+                        <img
+                          src={withdrawInfo.token.icon}
+                          alt={withdrawInfo.token?.symbol || "Token"}
+                          className="w-8 h-8 rounded-full"
+                        />
+                      )}
+                      <span>{withdrawInfo.token?.symbol || "BeamLink"}</span>
+                    </div>
+                    {withdrawInfo.usdValue && (
+                      <div className="text-base text-gray-500 mt-2">
+                        ${withdrawInfo.usdValue.toFixed(2)} USD
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* BeamLink Value Display - Inside Card */}
-                <div className="text-center">
-                  <div className="text-4xl font-black text-gray-900 mb-1 font-mono px-6 py-4 rounded-xl break-all overflow-hidden">
-                    {withdrawInfo.amount}
-                  </div>
-                  <div className="text-xl font-semibold text-gray-600 flex items-center justify-center gap-2">
-                    {withdrawInfo.token?.icon && (
-                      <img
-                        src={withdrawInfo.token.icon}
-                        alt={withdrawInfo.token?.symbol || "Token"}
-                        className="w-8 h-8 rounded-full"
-                      />
-                    )}
-                    <span>{withdrawInfo.token?.symbol || "BeamLink"}</span>
-                  </div>
-                  {withdrawInfo.usdValue && (
-                    <div className="text-base text-gray-500 mt-2">
-                      ${withdrawInfo.usdValue.toFixed(2)} USD
+                <div className="mt-4 space-y-3">
+                  {withdrawInfo.isClaimed ? (
+                    <div className="text-center p-4 bg-red-50 rounded-lg">
+                      <AlertCircle className="h-8 w-8 text-red-600 mx-auto mb-2" />
+                      <p className="text-red-700 font-medium">
+                        This deposit has already been claimed
+                      </p>
                     </div>
+                  ) : (
+                    <Button
+                      onClick={handleClaim}
+                      disabled={isClaiming}
+                      className="w-full"
+                    >
+                      {isClaiming ? "Claiming..." : "Claim"}
+                    </Button>
                   )}
                 </div>
-              </div>
 
-              <div className="mt-4 space-y-3">
-                {withdrawInfo.isClaimed ? (
-                  <div className="text-center p-4 bg-red-50 rounded-lg">
-                    <AlertCircle className="h-8 w-8 text-red-600 mx-auto mb-2" />
-                    <p className="text-red-700 font-medium">
-                      This deposit has already been claimed
-                    </p>
+                {withdrawError && (
+                  <div className="text-sm text-red-500 bg-red-50 p-3 rounded-lg w-full">
+                    Error: {withdrawError}
                   </div>
-                ) : (
-                  <Button
-                    onClick={handleClaim}
-                    disabled={isClaiming}
-                    className="w-full"
-                  >
-                    {isClaiming ? "Claiming..." : "Claim"}
-                  </Button>
                 )}
               </div>
-
-              {withdrawError && (
-                <div className="text-sm text-red-500 bg-red-50 p-3 rounded-lg w-full">
-                  Error: {withdrawError}
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -605,138 +621,139 @@ function AppContent() {
     };
 
     return (
-      <div className="min-h-screen flex flex-col items-center p-8 gap-8">
-        <div className="flex flex-col items-center gap-4 w-full max-w-md">
-          <WalletMultiButton />
-
-          <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-lg border w-full">
-            <div className="relative h-20 w-20 mb-4">
-              {/* Animated rainbow circle background */}
-              <div
-                className="absolute inset-0 h-20 w-20 rounded-full animate-spin"
-                style={{
-                  background:
-                    "conic-gradient(from 0deg, #00FFA3, #FFE500, #DC1FFF, #00FFA3)",
-                  animation:
-                    "spin 3s linear infinite, pulse 2s ease-in-out infinite",
-                  opacity: 0.5,
-                  mask: "radial-gradient(circle, transparent 40%, black 40%)",
-                  WebkitMask:
-                    "radial-gradient(circle, transparent 40%, black 40%)",
-                }}
-              />
-              {/* Checkmark icon */}
-              <div
-                className="absolute inset-0 h-20 w-20 z-10 flex items-center justify-center"
-                style={{
-                  filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
-                }}
-              >
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-green-600"
-                >
-                  <path d="M20 6L9 17l-5-5" />
-                </svg>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                BeamLink Created!
-              </h3>
-              <p className="text-gray-700 mb-4 text-center w-4/5 mx-auto">
-                Make sure to save this link — it will disappear when you close
-                this tab
-              </p>
-            </div>
-
-            <div className="w-full space-y-3">
-              {/* Token information */}
-              <div className="bg-white p-4 rounded-lg border">
-                <div className="flex items-center justify-center gap-3">
-                  <div className="text-lg text-gray-900 flex items-center gap-2">
-                    <span className="font-semibold">
-                      {depositResult?.amount}
-                    </span>
-                    {depositResult?.tokenIcon &&
-                      depositResult.tokenIcon !== null && (
-                        <img
-                          src={depositResult.tokenIcon}
-                          alt={depositResult?.tokenSymbol || "Token"}
-                          className="w-6 h-6 rounded-full"
-                          onLoad={() =>
-                            console.log(
-                              "Token image loaded:",
-                              depositResult.tokenIcon
-                            )
-                          }
-                          onError={() =>
-                            console.log(
-                              "Token image failed to load:",
-                              depositResult.tokenIcon
-                            )
-                          }
-                        />
-                      )}
-                    {(!depositResult?.tokenIcon ||
-                      depositResult?.tokenIcon === null) && (
-                      <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                        <span className="text-xs text-gray-500">?</span>
-                      </div>
-                    )}
-                    <span className="font-normal">
-                      {depositResult?.tokenSymbol}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gray-100 p-3 rounded-lg border border-gray-200">
+      <div className="min-h-screen flex flex-col">
+        <Header onLogoClick={handleLogoClick} />
+        <div className="flex flex-col items-center p-8 mt-8 gap-8 flex-1 w-full">
+          <div className="flex flex-col items-center gap-4 w-full max-w-md">
+            <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-lg border w-full">
+              <div className="relative h-20 w-20 mb-4">
+                {/* Animated rainbow circle background */}
                 <div
-                  className="flex items-center space-x-2 cursor-pointer hover:bg-gray-200 rounded-lg px-3 py-2 transition-colors"
-                  onClick={copyLink}
+                  className="absolute inset-0 h-20 w-20 rounded-full animate-spin"
+                  style={{
+                    background:
+                      "conic-gradient(from 0deg, #00FFA3, #FFE500, #DC1FFF, #00FFA3)",
+                    animation:
+                      "spin 3s linear infinite, pulse 2s ease-in-out infinite",
+                    opacity: 0.5,
+                    mask: "radial-gradient(circle, transparent 40%, black 40%)",
+                    WebkitMask:
+                      "radial-gradient(circle, transparent 40%, black 40%)",
+                  }}
+                />
+                {/* Checkmark icon */}
+                <div
+                  className="absolute inset-0 h-20 w-20 z-10 flex items-center justify-center"
+                  style={{
+                    filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
+                  }}
                 >
-                  <span className="font-mono text-sm text-gray-600 break-all flex-1">
-                    {depositLink}
-                  </span>
-                  {linkCopied ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4 text-gray-400" />
-                  )}
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-green-600"
+                  >
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <Button
-                  onClick={() => shareDepositLink(depositLink)}
-                  className="w-full flex items-center gap-2 py-3"
-                >
-                  <Share className="h-5 w-5" />
-                  Share
-                </Button>
-                <p className="text-sm text-gray-500 text-center w-4/5 mx-auto">
-                  Important: This link gives access to funds — only share with
-                  trusted recipients
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  BeamLink Created!
+                </h3>
+                <p className="text-gray-700 mb-4 text-center w-4/5 mx-auto">
+                  Make sure to save this link — it will disappear when you close
+                  this tab
                 </p>
               </div>
 
-              <div className="flex flex-col gap-2 mt-4">
-                <button
-                  onClick={() => window.open(depositLink, "_blank")}
-                  className="text-blue-600 hover:text-blue-800 underline text-sm flex items-center gap-1 justify-center"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Open Link
-                </button>
+              <div className="w-full space-y-3">
+                {/* Token information */}
+                <div className="bg-white p-4 rounded-lg border">
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="text-lg text-gray-900 flex items-center gap-2">
+                      <span className="font-semibold">
+                        {depositResult?.amount}
+                      </span>
+                      {depositResult?.tokenIcon &&
+                        depositResult.tokenIcon !== null && (
+                          <img
+                            src={depositResult.tokenIcon}
+                            alt={depositResult?.tokenSymbol || "Token"}
+                            className="w-6 h-6 rounded-full"
+                            onLoad={() =>
+                              console.log(
+                                "Token image loaded:",
+                                depositResult.tokenIcon
+                              )
+                            }
+                            onError={() =>
+                              console.log(
+                                "Token image failed to load:",
+                                depositResult.tokenIcon
+                              )
+                            }
+                          />
+                        )}
+                      {(!depositResult?.tokenIcon ||
+                        depositResult?.tokenIcon === null) && (
+                        <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
+                          <span className="text-xs text-gray-500">?</span>
+                        </div>
+                      )}
+                      <span className="font-normal">
+                        {depositResult?.tokenSymbol}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-100 p-3 rounded-lg border border-gray-200">
+                  <div
+                    className="flex items-center space-x-2 cursor-pointer hover:bg-gray-200 rounded-lg px-3 py-2 transition-colors"
+                    onClick={copyLink}
+                  >
+                    <span className="font-mono text-sm text-gray-600 break-all flex-1">
+                      {depositLink}
+                    </span>
+                    {linkCopied ? (
+                      <Check className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Copy className="h-4 w-4 text-gray-400" />
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Button
+                    onClick={() => shareDepositLink(depositLink)}
+                    className="w-full flex items-center gap-2 py-3"
+                  >
+                    <Share className="h-5 w-5" />
+                    Share
+                  </Button>
+                  <p className="text-sm text-gray-500 text-center w-4/5 mx-auto">
+                    Important: This link gives access to funds — only share with
+                    trusted recipients
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-2 mt-4">
+                  <button
+                    onClick={() => window.open(depositLink, "_blank")}
+                    className="text-blue-600 hover:text-blue-800 underline text-sm flex items-center gap-1 justify-center"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Open Link
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -747,11 +764,10 @@ function AppContent() {
 
   // Default form state
   return (
-    <>
-      <div className="min-h-screen flex flex-col items-center p-8 gap-8">
+    <div className="min-h-screen flex flex-col">
+      <Header onLogoClick={handleLogoClick} />
+      <div className="flex flex-col items-center p-8 mt-8 gap-8 flex-1 w-full">
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
-          <WalletMultiButton />
-
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -791,7 +807,7 @@ function AppContent() {
         open={isWaitingForWallet}
         onClose={handleCancelTransaction}
       />
-    </>
+    </div>
   );
 }
 

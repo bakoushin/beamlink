@@ -79,13 +79,17 @@ export function WalletMultiButton({
   };
 
   if (!wallet || !publicKey) {
-    return <Button onClick={openModal}>{content}</Button>;
+    return (
+      <Button onClick={openModal} variant="outline">
+        {content}
+      </Button>
+    );
   }
 
   return (
     <>
       <Button
-        variant="secondary"
+        variant="outline"
         className="gap-4"
         onClick={() => setDialogOpen(true)}
       >
