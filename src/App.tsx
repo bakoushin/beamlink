@@ -32,7 +32,6 @@ import {
   ExternalLink,
   Share,
   AlertCircle,
-  DollarSign,
   Check,
 } from "lucide-react";
 import type { Token } from "@/types/token";
@@ -244,15 +243,15 @@ function AppContent() {
         tokenAmount,
         tokenSymbol: selectedToken.symbol,
         selectedToken,
-        tokenIcon: selectedToken.icon || (selectedToken as any).image,
-        hasIcon: !!selectedToken.icon,
+        tokenIcon: (selectedToken as any).icon || (selectedToken as any).image,
+        hasIcon: !!(selectedToken as any).icon,
         allTokenKeys: Object.keys(selectedToken),
         possibleIconFields: {
-          icon: selectedToken.icon,
-          image: selectedToken.image,
-          logo: selectedToken.logo,
-          logoURI: selectedToken.logoURI,
-          imageUrl: selectedToken.imageUrl,
+          icon: (selectedToken as any).icon,
+          image: (selectedToken as any).image,
+          logo: (selectedToken as any).logo,
+          logoURI: (selectedToken as any).logoURI,
+          imageUrl: (selectedToken as any).imageUrl,
         },
       });
 
@@ -262,7 +261,8 @@ function AppContent() {
         privateKey: result.privateKey,
         amount: tokenAmount,
         tokenSymbol: selectedToken.symbol,
-        tokenIcon: selectedToken.icon || (selectedToken as any).image || null,
+        tokenIcon:
+          (selectedToken as any).icon || (selectedToken as any).image || null,
       });
       // Reset form after successful deposit
       setTokenAmount("");
@@ -279,11 +279,6 @@ function AppContent() {
     setIsWaitingForWallet(false);
     cancelTransaction(); // Reset the loading state in the deposit hook
     // Keep form state (token and amount) so user can try again
-  };
-
-  const handleNewDeposit = () => {
-    setDepositResult(null);
-    setIsWaitingForWallet(false);
   };
 
   const handleClaim = async () => {
@@ -523,44 +518,13 @@ function AppContent() {
             <WalletMultiButton />
 
             <div className="w-full">
-              <h2 className="text-xl font-semibold mb-4">Claim Deposit</h2>
+              <h2 className="text-xl font-semibold mb-4">Claim BeamLink</h2>
 
-              <div className="bg-white p-6 rounded-lg border space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">
-                    Amount:
-                  </span>
-                  <div className="text-lg font-semibold flex items-center gap-2">
-                    <span>{withdrawInfo.amount}</span>
-                    {withdrawInfo.token?.icon && (
-                      <img
-                        src={withdrawInfo.token.icon}
-                        alt={withdrawInfo.token?.symbol || "Token"}
-                        className="w-6 h-6 rounded-full"
-                      />
-                    )}
-                    <span>{withdrawInfo.token?.symbol}</span>
-                  </div>
-                </div>
-
-                {withdrawInfo.usdValue && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                      <DollarSign className="h-4 w-4" />
-                      USD Value:
-                    </span>
-                    <span className="text-lg font-semibold">
-                      ${withdrawInfo.usdValue.toFixed(2)}
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">
-                    Status:
-                  </span>
+              <div className="bg-white p-8 rounded-lg border relative aspect-square flex flex-col justify-center items-center">
+                {/* Status Badge - Top Right Corner */}
+                <div className="absolute top-4 right-4">
                   <span
-                    className={`text-sm font-medium px-2 py-1 rounded ${
+                    className={`text-xs font-medium px-3 py-1 rounded-full ${
                       withdrawInfo.isClaimed
                         ? "bg-red-100 text-red-800"
                         : "bg-green-100 text-green-800"
@@ -572,21 +536,27 @@ function AppContent() {
                   </span>
                 </div>
 
-                {withdrawInfo.token && (
-                  <div className="flex items-center gap-2 pt-2">
-                    <img
-                      src={withdrawInfo.token.icon}
-                      alt={withdrawInfo.token.symbol}
-                      className="w-6 h-6 rounded-full"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                    <span className="text-sm text-gray-600">
-                      {withdrawInfo.token.name} ({withdrawInfo.token.symbol})
-                    </span>
+                {/* BeamLink Value Display - Inside Card */}
+                <div className="text-center">
+                  <div className="text-5xl font-black text-gray-900 mb-3">
+                    {withdrawInfo.amount}
                   </div>
-                )}
+                  <div className="text-xl font-semibold text-gray-600 flex items-center justify-center gap-2">
+                    {withdrawInfo.token?.icon && (
+                      <img
+                        src={withdrawInfo.token.icon}
+                        alt={withdrawInfo.token?.symbol || "Token"}
+                        className="w-8 h-8 rounded-full"
+                      />
+                    )}
+                    <span>{withdrawInfo.token?.symbol || "BeamLink"}</span>
+                  </div>
+                  {withdrawInfo.usdValue && (
+                    <div className="text-base text-gray-500 mt-2">
+                      ${withdrawInfo.usdValue.toFixed(2)} USD
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="mt-4 space-y-3">
@@ -603,17 +573,9 @@ function AppContent() {
                     disabled={isClaiming}
                     className="w-full"
                   >
-                    {isClaiming ? "Claiming..." : "Claim Deposit"}
+                    {isClaiming ? "Claiming..." : "Claim"}
                   </Button>
                 )}
-
-                <Button
-                  onClick={handleNewWithdraw}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Create New Deposit
-                </Button>
               </div>
 
               {withdrawError && (
@@ -651,7 +613,7 @@ function AppContent() {
             <div className="relative h-20 w-20 mb-4">
               {/* Animated rainbow circle background */}
               <div
-                className="absolute inset-0 h-20 w-20 rounded-full animate-spin animate-pulse"
+                className="absolute inset-0 h-20 w-20 rounded-full animate-spin"
                 style={{
                   background:
                     "conic-gradient(from 0deg, #00FFA3, #FFE500, #DC1FFF, #00FFA3)",
@@ -725,8 +687,11 @@ function AppContent() {
                         />
                       )}
                     {(!depositResult?.tokenIcon ||
-                      depositResult?.tokenIcon === null) &&
-                      console.log("No token icon available:", depositResult)}
+                      depositResult?.tokenIcon === null) && (
+                      <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
+                        <span className="text-xs text-gray-500">?</span>
+                      </div>
+                    )}
                     <span className="font-normal">
                       {depositResult?.tokenSymbol}
                     </span>
