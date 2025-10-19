@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TransactionDialog } from "@/components/TransactionDialog";
 import { Header } from "@/components/Header";
+import { AnimatedText } from "@/components/AnimatedText";
 import {
   CheckCircle,
   Copy,
@@ -762,6 +763,18 @@ function AppContent() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header onLogoClick={handleLogoClick} />
+
+      {/* Hero Section */}
+      <div className="flex flex-col items-center px-8 mt-12 mb-4">
+        <h1 className="text-4xl md:text-5xl font-bold text-center leading-tight flex flex-col items-center">
+          <div>Send tokens as links in</div>
+          <AnimatedText />
+          <div className="mt-0 max-w-md">
+            without even asking for wallet addresses
+          </div>
+        </h1>
+      </div>
+
       <div className="flex flex-col items-center p-8 mt-8 gap-8 flex-1 w-full">
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
           <form
@@ -772,7 +785,6 @@ function AppContent() {
             className="w-full flex flex-col gap-4"
           >
             <div className="w-full">
-              <h2 className="text-xl font-semibold mb-4">Token Deposit</h2>
               <TokenInput
                 value={tokenAmount}
                 onValueChange={setTokenAmount}
