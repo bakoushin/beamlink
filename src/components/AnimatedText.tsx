@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 
 const words = [
-  "text message",
-  "SMS message",
-  "Telegram message",
-  "Discord message",
-  "WhatsApp message",
-  "iMessage",
-  "gift card",
+  "a text message",
+  "an SMS message",
+  "a Telegram message",
+  "a Discord message",
+  "a WhatsApp message",
+  "an iMessage",
+  "a gift card",
 ];
 
 export function AnimatedText() {

@@ -79,9 +79,7 @@ export function LandingPage({
           </Badge>
 
           <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight flex flex-col items-center">
-            <div className="leading-none -mb-6">
-              Send crypto like you send a
-            </div>
+            <div className="leading-none -mb-6">Send crypto like you send</div>
             <div className="leading-normal">
               <AnimatedText />
             </div>
