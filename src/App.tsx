@@ -24,6 +24,7 @@ import { WalletModalProvider, useWalletModal } from "@/hooks/use-wallet-modal";
 import { useDeposit } from "@/hooks/use-deposit";
 import { useWithdraw } from "@/hooks/use-withdraw";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { TransactionDialog } from "@/components/TransactionDialog";
 import { Header } from "@/components/Header";
 import {
@@ -421,13 +422,13 @@ function AppContent() {
           <Header onLogoClick={handleLogoClick} />
           <div className="flex flex-col items-center p-8 mt-8 gap-8 flex-1 w-full">
             <div className="flex flex-col items-center gap-4 w-full max-w-md">
-              <div className="flex flex-col items-center gap-4 p-8 bg-blue-50 rounded-lg w-full">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div className="flex flex-col items-center gap-4 p-8 bg-card rounded-lg w-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 <div className="text-center">
-                  <h3 className="text-lg font-semibold text-blue-900">
+                  <h3 className="text-lg font-semibold text-card-foreground">
                     Loading Deposit Info
                   </h3>
-                  <p className="text-blue-700">
+                  <p className="text-muted-foreground">
                     Fetching deposit information...
                   </p>
                 </div>
@@ -445,13 +446,13 @@ function AppContent() {
           <Header onLogoClick={handleLogoClick} />
           <div className="flex flex-col items-center p-8 mt-8 gap-8 flex-1 w-full">
             <div className="flex flex-col items-center gap-4 w-full max-w-md">
-              <div className="flex flex-col items-center gap-4 p-8 bg-red-50 rounded-lg w-full">
-                <AlertCircle className="h-16 w-16 text-red-600" />
+              <div className="flex flex-col items-center gap-4 p-8 bg-destructive/10 rounded-lg w-full">
+                <AlertCircle className="h-16 w-16 text-destructive" />
                 <div className="text-center">
-                  <h3 className="text-lg font-semibold text-red-900 mb-2">
+                  <h3 className="text-lg font-semibold text-destructive mb-2">
                     Invalid Deposit Link
                   </h3>
-                  <p className="text-red-700 mb-4">
+                  <p className="text-destructive/80 mb-4">
                     {withdrawError ||
                       withdrawInfo?.error ||
                       "This deposit link is invalid or has expired."}
@@ -474,24 +475,24 @@ function AppContent() {
           <Header onLogoClick={handleLogoClick} />
           <div className="flex flex-col items-center p-8 mt-8 gap-8 flex-1 w-full">
             <div className="flex flex-col items-center gap-4 w-full max-w-md">
-              <div className="flex flex-col items-center gap-4 p-8 bg-green-50 rounded-lg w-full">
+              <div className="flex flex-col items-center gap-4 p-8 bg-primary/10 rounded-lg w-full">
                 <div className="relative">
-                  <CheckCircle className="h-16 w-16 text-green-600 animate-pulse" />
-                  <div className="absolute inset-0 h-16 w-16 border-4 border-green-200 rounded-full animate-ping"></div>
+                  <CheckCircle className="h-16 w-16 text-primary animate-pulse" />
+                  <div className="absolute inset-0 h-16 w-16 border-4 border-primary/20 rounded-full animate-ping"></div>
                 </div>
 
                 <div className="text-center">
-                  <h3 className="text-lg font-semibold text-green-900 mb-2">
+                  <h3 className="text-lg font-semibold text-primary mb-2">
                     Successfully Claimed!
                   </h3>
-                  <p className="text-green-700 mb-4">
+                  <p className="text-primary/80 mb-4">
                     Your deposit has been claimed to your wallet
                   </p>
                 </div>
 
                 <div className="w-full space-y-3">
-                  <div className="bg-white p-3 rounded-lg border">
-                    <label className="text-sm font-medium text-gray-700 block mb-2">
+                  <div className="bg-background p-3 rounded-lg border">
+                    <label className="text-sm font-medium text-muted-foreground block mb-2">
                       Transaction Signature:
                     </label>
                     <div className="flex items-center gap-2">
@@ -499,7 +500,7 @@ function AppContent() {
                         type="text"
                         value={claimResult}
                         readOnly
-                        className="flex-1 text-xs bg-gray-50 p-2 rounded border"
+                        className="flex-1 text-xs bg-muted p-2 rounded border"
                       />
                       <Button
                         size="sm"
@@ -535,28 +536,31 @@ function AppContent() {
                 <div className="p-8 rounded-lg border relative aspect-square flex flex-col justify-center items-center max-w-full overflow-hidden">
                   {/* Status Badge - Top Right Corner */}
                   <div className="absolute top-4 right-4">
-                    <span
-                      className={`text-xs font-medium px-3 py-1 rounded-full ${
-                        withdrawInfo.isClaimed
-                          ? "bg-red-100 text-red-800"
-                          : "bg-green-100 text-green-800"
+                    <Badge
+                      variant={
+                        withdrawInfo.isClaimed ? "destructive" : "default"
+                      }
+                      className={`px-3 py-1 ${
+                        !withdrawInfo.isClaimed
+                          ? "bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50"
+                          : ""
                       }`}
                     >
                       {withdrawInfo.isClaimed
                         ? "Already Claimed"
                         : "Available to Claim"}
-                    </span>
+                    </Badge>
                   </div>
 
                   {/* BeamLink Value Display - Inside Card */}
                   <div className="text-center">
                     <div
-                      className="text-5xl font-black text-gray-900 mb-1 px-6 py-4 rounded-xl break-all overflow-hidden"
+                      className="text-5xl font-black text-foreground mb-1 px-6 py-4 rounded-xl break-all overflow-hidden"
                       style={{ fontFamily: "'IBM Plex Mono', monospace" }}
                     >
                       {withdrawInfo.amount}
                     </div>
-                    <div className="text-xl font-semibold text-gray-600 flex items-center justify-center gap-2">
+                    <div className="text-xl font-semibold text-muted-foreground flex items-center justify-center gap-2">
                       {withdrawInfo.token?.icon && (
                         <img
                           src={withdrawInfo.token.icon}
@@ -567,7 +571,7 @@ function AppContent() {
                       <span>{withdrawInfo.token?.symbol || "BeamLink"}</span>
                     </div>
                     {withdrawInfo.usdValue && (
-                      <div className="text-base text-gray-500 mt-2">
+                      <div className="text-base text-muted-foreground/80 mt-2">
                         ${withdrawInfo.usdValue.toFixed(2)} USD
                       </div>
                     )}
@@ -576,9 +580,9 @@ function AppContent() {
 
                 <div className="mt-4 space-y-3">
                   {withdrawInfo.isClaimed ? (
-                    <div className="text-center p-4 bg-red-50 rounded-lg">
-                      <AlertCircle className="h-8 w-8 text-red-600 mx-auto mb-2" />
-                      <p className="text-red-700 font-medium">
+                    <div className="text-center p-4 bg-destructive/10 rounded-lg">
+                      <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
+                      <p className="text-destructive/80 font-medium">
                         This deposit has already been claimed
                       </p>
                     </div>
@@ -629,7 +633,7 @@ function AppContent() {
         <Header onLogoClick={handleLogoClick} />
         <div className="flex flex-col items-center p-8 mt-8 gap-8 flex-1 w-full">
           <div className="flex flex-col items-center gap-4 w-full max-w-md">
-            <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-lg border w-full">
+            <div className="flex flex-col items-center gap-4 p-8 bg-card rounded-lg border w-full text-card-foreground">
               <div className="relative h-20 w-20 mb-4">
                 {/* Animated rainbow circle background */}
                 <div
@@ -669,68 +673,46 @@ function AppContent() {
               </div>
 
               <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  BeamLink Created!
-                </h3>
-                <p className="text-gray-700 mb-4 text-center w-4/5 mx-auto">
+                <h3 className="text-lg font-semibold">BeamLink Created!</h3>
+                <p className="text-muted-foreground text-center w-4/5 mx-auto">
                   Make sure to save this link — it will disappear when you close
                   this tab
                 </p>
               </div>
 
-              <div className="w-full space-y-3">
-                {/* Token information */}
-                <div className="bg-white p-4 rounded-lg border">
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="text-lg text-gray-900 flex items-center gap-2">
-                      <span className="font-semibold">
-                        {depositResult?.amount}
-                      </span>
-                      {depositResult?.tokenIcon &&
-                        depositResult.tokenIcon !== null && (
-                          <img
-                            src={depositResult.tokenIcon}
-                            alt={depositResult?.tokenSymbol || "Token"}
-                            className="w-6 h-6 rounded-full"
-                            onLoad={() =>
-                              console.log(
-                                "Token image loaded:",
-                                depositResult.tokenIcon
-                              )
-                            }
-                            onError={() =>
-                              console.log(
-                                "Token image failed to load:",
-                                depositResult.tokenIcon
-                              )
-                            }
-                          />
-                        )}
-                      {(!depositResult?.tokenIcon ||
-                        depositResult?.tokenIcon === null) && (
-                        <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                          <span className="text-xs text-gray-500">?</span>
-                        </div>
-                      )}
-                      <span className="font-normal">
-                        {depositResult?.tokenSymbol}
-                      </span>
-                    </div>
-                  </div>
+              {/* Token information */}
+              <div className="text-center mb-4">
+                <div
+                  className="text-5xl font-black text-foreground mb-1 px-6 py-4 rounded-xl break-all overflow-hidden"
+                  style={{ fontFamily: "'IBM Plex Mono', monospace" }}
+                >
+                  {depositResult?.amount}
                 </div>
+                <div className="text-xl font-semibold text-muted-foreground flex items-center justify-center gap-2">
+                  {depositResult?.tokenIcon && (
+                    <img
+                      src={depositResult.tokenIcon}
+                      alt={depositResult?.tokenSymbol || "Token"}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  )}
+                  <span>{depositResult?.tokenSymbol}</span>
+                </div>
+              </div>
 
-                <div className="bg-gray-100 p-3 rounded-lg border border-gray-200">
+              <div className="w-full space-y-3">
+                <div className="bg-muted/50 p-3 rounded-lg border">
                   <div
-                    className="flex items-center space-x-2 cursor-pointer hover:bg-gray-200 rounded-lg px-3 py-2 transition-colors"
+                    className="flex items-center space-x-2 cursor-pointer hover:bg-muted rounded-lg px-3 py-2 transition-colors"
                     onClick={copyLink}
                   >
-                    <span className="font-mono text-sm text-gray-600 break-all flex-1">
+                    <span className="font-mono text-sm text-muted-foreground break-all flex-1">
                       {depositLink}
                     </span>
                     {linkCopied ? (
                       <Check className="h-4 w-4 text-green-600" />
                     ) : (
-                      <Copy className="h-4 w-4 text-gray-400" />
+                      <Copy className="h-4 w-4 text-muted-foreground" />
                     )}
                   </div>
                 </div>
@@ -743,7 +725,7 @@ function AppContent() {
                     <Share className="h-5 w-5" />
                     Share
                   </Button>
-                  <p className="text-sm text-gray-500 text-center w-4/5 mx-auto">
+                  <p className="text-sm text-muted-foreground text-center w-4/5 mx-auto">
                     Important: This link gives access to funds — only share with
                     trusted recipients
                   </p>
@@ -752,7 +734,7 @@ function AppContent() {
                 <div className="flex flex-col gap-2 mt-4">
                   <button
                     onClick={() => window.open(depositLink, "_blank")}
-                    className="text-blue-600 hover:text-blue-800 underline text-sm flex items-center gap-1 justify-center"
+                    className="text-primary hover:text-primary/80 underline text-sm flex items-center gap-1 justify-center"
                   >
                     <ExternalLink className="h-4 w-4" />
                     Open Link
@@ -800,7 +782,7 @@ function AppContent() {
           </form>
 
           {error && (
-            <div className="text-sm text-red-500 bg-red-50 p-3 rounded-lg w-full">
+            <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg w-full">
               Error: {error}
             </div>
           )}

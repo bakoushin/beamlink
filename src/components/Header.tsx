@@ -1,5 +1,6 @@
 import { WalletMultiButton } from "./wallet/WalletMultiButton";
 import logo from "../assets/logo.svg";
+import { ModeToggle } from "./mode-toggle";
 
 export function Header({ onLogoClick }: { onLogoClick: () => void }) {
   return (
@@ -29,7 +30,8 @@ export function Header({ onLogoClick }: { onLogoClick: () => void }) {
               BeamLink
             </h1>
           </a>
-          <div>
+          <div className="flex items-center gap-4">
+            <ModeToggle />
             <WalletMultiButton />
           </div>
         </div>
