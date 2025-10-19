@@ -520,7 +520,7 @@ function AppContent() {
             <div className="w-full">
               <h2 className="text-xl font-semibold mb-4">Claim BeamLink</h2>
 
-              <div className="bg-white p-8 rounded-lg border relative aspect-square flex flex-col justify-center items-center">
+              <div className="p-8 rounded-lg border relative aspect-square flex flex-col justify-center items-center max-w-full overflow-hidden">
                 {/* Status Badge - Top Right Corner */}
                 <div className="absolute top-4 right-4">
                   <span
@@ -538,7 +538,7 @@ function AppContent() {
 
                 {/* BeamLink Value Display - Inside Card */}
                 <div className="text-center">
-                  <div className="text-5xl font-black text-gray-900 mb-3">
+                  <div className="text-4xl font-black text-gray-900 mb-1 font-mono px-6 py-4 rounded-xl break-all overflow-hidden">
                     {withdrawInfo.amount}
                   </div>
                   <div className="text-xl font-semibold text-gray-600 flex items-center justify-center gap-2">

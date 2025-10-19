@@ -146,16 +146,62 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
             usdPrice: 0, // Will be fetched separately
           } as Token;
         } else {
-          // SPL token - you might need to fetch token metadata
-          // For now, we'll create a basic token object
-          token = {
-            id: depositAccount.mint.toBase58(),
-            name: "Unknown Token",
-            symbol: "UNK",
-            icon: "",
-            decimals: 9,
-            usdPrice: 0,
-          } as Token;
+          // SPL token - fetch token metadata from Jupiter API
+          try {
+            const mintAddress = depositAccount.mint.toBase58();
+            console.log("Fetching metadata for mint:", mintAddress);
+
+            const response = await fetch(
+              `https://lite-api.jup.ag/tokens/v2/search?query=${mintAddress}`
+            );
+
+            if (response.ok) {
+              const tokens: Token[] = await response.json();
+              console.log("Jupiter API response:", tokens);
+
+              const tokenMetadata = tokens.find((t) => t.id === mintAddress);
+
+              if (tokenMetadata) {
+                console.log("Found token metadata:", tokenMetadata);
+                token = tokenMetadata;
+              } else {
+                console.log(
+                  "Token not found in Jupiter response, using fallback"
+                );
+                // Fallback if token not found in Jupiter
+                token = {
+                  id: mintAddress,
+                  name: "Unknown Token",
+                  symbol: "UNK",
+                  icon: "",
+                  decimals: 9,
+                  usdPrice: 0,
+                } as Token;
+              }
+            } else {
+              console.log("Jupiter API failed with status:", response.status);
+              // Fallback if API fails
+              token = {
+                id: mintAddress,
+                name: "Unknown Token",
+                symbol: "UNK",
+                icon: "",
+                decimals: 9,
+                usdPrice: 0,
+              } as Token;
+            }
+          } catch (error) {
+            console.error("Failed to fetch token metadata:", error);
+            // Fallback if fetch fails
+            token = {
+              id: depositAccount.mint.toBase58(),
+              name: "Unknown Token",
+              symbol: "UNK",
+              icon: "",
+              decimals: 9,
+              usdPrice: 0,
+            } as Token;
+          }
         }
 
         // Convert amount from lamports/token units to human readable
@@ -163,6 +209,15 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
         const amount = (
           Number(depositAccount.amount) / Math.pow(10, tokenDecimals)
         ).toString();
+
+        // Debug logging for amount calculation
+        console.log("Amount calculation debug:", {
+          rawAmount: depositAccount.amount.toString(),
+          tokenDecimals,
+          calculatedAmount: amount,
+          tokenSymbol: token.symbol,
+          tokenName: token.name,
+        });
 
         // TODO: Fetch USD value from price API
         // For now, we'll set it to undefined
