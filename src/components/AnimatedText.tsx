@@ -31,12 +31,6 @@ export function AnimatedText() {
               ? "opacity-0 -translate-y-8 duration-300"
               : "opacity-100 translate-y-0 duration-500"
           }`}
-          style={{
-            background: "linear-gradient(135deg, #00FFA3, #FFE500, #DC1FFF)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}
         >
           {words[currentIndex]}
         </span>
@@ -49,12 +43,6 @@ export function AnimatedText() {
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-full"
           }`}
-          style={{
-            background: "linear-gradient(135deg, #00FFA3, #FFE500, #DC1FFF)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}
         >
           {words[nextIndex]}
         </span>
