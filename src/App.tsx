@@ -12,7 +12,6 @@ import {
   UnsafeBurnerWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 import "./App.css";
-import { TokenInput } from "@/components/TokenInput";
 import {
   useQuery,
   QueryClient,
@@ -27,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TransactionDialog } from "@/components/TransactionDialog";
 import { Header } from "@/components/Header";
-import { AnimatedText } from "@/components/AnimatedText";
+import { LandingPage } from "@/components/LandingPage";
 import {
   CheckCircle,
   Copy,
@@ -385,12 +384,6 @@ function AppContent() {
 
     return inputAmount > userBalance.balance;
   };
-
-  const canDeposit =
-    selectedToken &&
-    tokenAmount &&
-    parseFloat(tokenAmount) > 0 &&
-    !hasInsufficientBalance();
 
   // Check if wallet is connected
   const isWalletConnected = wallet && publicKey;
@@ -764,54 +757,18 @@ function AppContent() {
     <div className="min-h-screen flex flex-col">
       <Header onLogoClick={handleLogoClick} />
 
-      {/* Hero Section */}
-      <div className="flex flex-col items-center px-8 mt-12 mb-4">
-        <h1 className="text-4xl md:text-5xl font-bold text-center flex flex-col items-center">
-          <div className="leading-none -mb-6">Send tokens as links in</div>
-          <div className="leading-normal">
-            <AnimatedText />
-          </div>
-          <div className="leading-none -mt-6 max-w-md">
-            without even asking for wallet addresses
-          </div>
-        </h1>
-      </div>
-
-      <div className="flex flex-col items-center p-8 mt-8 gap-8 flex-1 w-full">
-        <div className="flex flex-col items-center gap-4 w-full max-w-md">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleButtonClick();
-            }}
-            className="w-full flex flex-col gap-4"
-          >
-            <div className="w-full">
-              <TokenInput
-                value={tokenAmount}
-                onValueChange={setTokenAmount}
-                selectedToken={selectedToken}
-                onTokenSelect={setSelectedToken}
-                hasInsufficientBalance={hasInsufficientBalance()}
-              />
-            </div>
-
-            <Button
-              type="submit"
-              disabled={!isWalletConnected ? false : !canDeposit || isLoading}
-              className="w-full"
-            >
-              {getButtonText()}
-            </Button>
-          </form>
-
-          {error && (
-            <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg w-full">
-              Error: {error}
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Landing Page */}
+      <LandingPage
+        tokenAmount={tokenAmount}
+        onTokenAmountChange={setTokenAmount}
+        selectedToken={selectedToken}
+        onTokenSelect={setSelectedToken}
+        hasInsufficientBalance={hasInsufficientBalance()}
+        onButtonClick={handleButtonClick}
+        getButtonText={getButtonText}
+        isWalletConnected={!!isWalletConnected}
+        error={error}
+      />
 
       <TransactionDialog
         open={isWaitingForWallet}

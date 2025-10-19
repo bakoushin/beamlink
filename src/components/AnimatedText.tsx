@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 
 const words = [
-  "SMS",
-  "Telegram",
-  "Discord",
-  "WhatsApp",
+  "text message",
+  "SMS message",
+  "Telegram message",
+  "Discord message",
+  "WhatsApp message",
   "iMessage",
   "gift card",
 ];
@@ -35,15 +36,21 @@ export function AnimatedText() {
 
   return (
     <div className="relative inline-block py-2 overflow-visible">
-      <div className="relative flex justify-center items-center overflow-visible">
+      <div className="relative flex justify-center items-center overflow-visible whitespace-nowrap">
         {/* Current word */}
         <span
           key={`current-${currentIndex}`}
-          className={`inline-block transition-all ease-in-out text-muted-foreground ${
+          className={`inline-block transition-all ease-in-out ${
             isTransitioning
               ? "opacity-0 -translate-y-8 duration-300"
               : "opacity-100 translate-y-0 duration-500"
           }`}
+          style={{
+            background: "linear-gradient(to right, #2563eb, #9333ea)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
         >
           {words[currentIndex]}
         </span>
@@ -51,11 +58,17 @@ export function AnimatedText() {
         {/* Next word */}
         <span
           key={`next-${nextIndex}`}
-          className={`inline-block transition-all duration-500 ease-in-out absolute text-muted-foreground ${
+          className={`inline-block transition-all duration-500 ease-in-out absolute ${
             isTransitioning
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-full"
           }`}
+          style={{
+            background: "linear-gradient(to right, #2563eb, #9333ea)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
         >
           {words[nextIndex]}
         </span>
