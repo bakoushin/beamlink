@@ -2,10 +2,8 @@ import { useEffect, useState } from "react";
 
 const words = [
   "a text message",
-  "an SMS message",
-  "a Telegram message",
-  "a Discord message",
-  "a WhatsApp message",
+  "an SMS",
+  "a WhatsApp",
   "an iMessage",
   "a gift card",
 ];
