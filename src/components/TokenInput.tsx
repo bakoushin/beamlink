@@ -17,6 +17,7 @@ interface TokenInputProps {
   disabled?: boolean;
   className?: string;
   placeholder?: string;
+  hasInsufficientBalance?: boolean;
 }
 
 export function TokenInput({
@@ -28,6 +29,7 @@ export function TokenInput({
   disabled = false,
   className = "",
   placeholder = "0",
+  hasInsufficientBalance = false,
 }: TokenInputProps) {
   const [isTokenSelectorOpen, setIsTokenSelectorOpen] = React.useState(false);
   const [imageLoaded, setImageLoaded] = React.useState(false);
@@ -225,6 +227,7 @@ export function TokenInput({
               text-3xl font-semibold bg-transparent border-none outline-none 
               w-full placeholder:text-muted-foreground/40
               disabled:cursor-not-allowed
+              ${hasInsufficientBalance ? "text-red-600" : ""}
               ${!selectedToken ? "cursor-pointer" : ""}
             `}
             onFocus={(e) => {

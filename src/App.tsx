@@ -4,6 +4,7 @@ import {
   ConnectionProvider,
   WalletProvider,
   useWallet,
+  useConnection,
 } from "@solana/wallet-adapter-react";
 import {
   PhantomWalletAdapter,
@@ -18,6 +19,7 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { topTokensQueryOptions } from "@/queries/tokens";
+import { userTokenBalancesQueryOptions } from "@/queries/balances";
 import { WalletModalProvider, useWalletModal } from "@/hooks/use-wallet-modal";
 import { WalletMultiButton } from "@/components/wallet/WalletMultiButton";
 import { useDeposit } from "@/hooks/use-deposit";
@@ -80,7 +82,13 @@ function AppContent() {
 
   // Wallet connection state
   const { publicKey, wallet } = useWallet();
+  const { connection } = useConnection();
   const { setVisible } = useWalletModal();
+
+  // Fetch user token balances when wallet is connected
+  const { data: userBalances } = useQuery(
+    userTokenBalancesQueryOptions(connection, publicKey, true)
+  );
 
   // Parse URL hash for withdraw flow
   const [privateKey, setPrivateKey] = useState<string | undefined>(undefined);
@@ -194,8 +202,24 @@ function AppContent() {
     }
   };
 
+  // Helper function to check if user has sufficient balance
+  const hasInsufficientBalance = (): boolean => {
+    if (!selectedToken || !tokenAmount || !userBalances) return false;
+    
+    const inputAmount = parseFloat(tokenAmount);
+    if (isNaN(inputAmount) || inputAmount <= 0) return false;
+
+    // Find the user's balance for the selected token
+    const tokenId = "id" in selectedToken ? selectedToken.id : selectedToken.address;
+    const userBalance = userBalances.find(balance => balance.address === tokenId);
+    
+    if (!userBalance) return true; // No balance found means insufficient
+    
+    return inputAmount > userBalance.balance;
+  };
+
   const canDeposit =
-    selectedToken && tokenAmount && parseFloat(tokenAmount) > 0;
+    selectedToken && tokenAmount && parseFloat(tokenAmount) > 0 && !hasInsufficientBalance();
 
   // Check if wallet is connected
   const isWalletConnected = wallet && publicKey;
@@ -204,6 +228,9 @@ function AppContent() {
   const getButtonText = () => {
     if (isLoading) return "Processing Deposit...";
     if (!isWalletConnected) return "Connect wallet";
+    if (hasInsufficientBalance() && selectedToken) {
+      return `Not enough ${selectedToken.symbol}`;
+    }
     return "Create BeamLink";
   };
 
@@ -542,6 +569,7 @@ function AppContent() {
             onValueChange={setTokenAmount}
             selectedToken={selectedToken}
             onTokenSelect={setSelectedToken}
+            hasInsufficientBalance={hasInsufficientBalance()}
           />
         </div>
 
