@@ -25,6 +25,7 @@ import { WalletMultiButton } from "@/components/wallet/WalletMultiButton";
 import { useDeposit } from "@/hooks/use-deposit";
 import { useWithdraw } from "@/hooks/use-withdraw";
 import { Button } from "@/components/ui/button";
+import { TransactionDialog } from "@/components/TransactionDialog";
 import {
   CheckCircle,
   Copy,
@@ -113,7 +114,7 @@ function AppContent() {
   const [isWaitingForWallet, setIsWaitingForWallet] = useState(false);
   const [claimResult, setClaimResult] = useState<string | null>(null);
 
-  const { deposit, isLoading, error } = useDeposit();
+  const { deposit, isLoading, error, cancelTransaction } = useDeposit();
   const {
     withdrawInfo,
     isLoading: isWithdrawLoading,
@@ -140,9 +141,16 @@ function AppContent() {
       setSelectedToken(null);
     } catch (err) {
       console.error("Deposit failed:", err);
+      // Keep form state on error so user can try again
     } finally {
       setIsWaitingForWallet(false);
     }
+  };
+
+  const handleCancelTransaction = () => {
+    setIsWaitingForWallet(false);
+    cancelTransaction(); // Reset the loading state in the deposit hook
+    // Keep form state (token and amount) so user can try again
   };
 
   const handleNewDeposit = () => {
@@ -232,7 +240,7 @@ function AppContent() {
 
   // Button text based on wallet connection state
   const getButtonText = () => {
-    if (isLoading) return "Processing Deposit...";
+    if (isLoading) return "Creating BeamLink...";
     if (!isWalletConnected) return "Connect wallet";
     if (hasInsufficientBalance() && selectedToken) {
       return `Not enough ${selectedToken.symbol}`;
@@ -461,29 +469,6 @@ function AppContent() {
     }
   }
 
-  // Show loading state when waiting for wallet interaction
-  if (isWaitingForWallet) {
-    return (
-      <div className="min-h-screen flex flex-col items-center p-8 gap-8">
-        <div className="flex flex-col items-center gap-4 w-full max-w-md">
-          <WalletMultiButton />
-
-          <div className="flex flex-col items-center gap-4 p-8 bg-blue-50 rounded-lg w-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-blue-900">
-                Confirm Deposit
-              </h3>
-              <p className="text-blue-700">
-                Please confirm the deposit in your wallet
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Show success state after deposit is confirmed
   if (depositResult) {
     const depositLink = `${window.location.origin}/#/${depositResult.privateKey}`;
@@ -564,36 +549,43 @@ function AppContent() {
 
   // Default form state
   return (
-    <div className="min-h-screen flex flex-col items-center p-8 gap-8">
-      <div className="flex flex-col items-center gap-4 w-full max-w-md">
-        <WalletMultiButton />
+    <>
+      <div className="min-h-screen flex flex-col items-center p-8 gap-8">
+        <div className="flex flex-col items-center gap-4 w-full max-w-md">
+          <WalletMultiButton />
 
-        <div className="w-full">
-          <h2 className="text-xl font-semibold mb-4">Token Deposit</h2>
-          <TokenInput
-            value={tokenAmount}
-            onValueChange={setTokenAmount}
-            selectedToken={selectedToken}
-            onTokenSelect={setSelectedToken}
-            hasInsufficientBalance={hasInsufficientBalance()}
-          />
-        </div>
-
-        <Button
-          onClick={handleButtonClick}
-          disabled={!isWalletConnected ? false : !canDeposit || isLoading}
-          className="w-full"
-        >
-          {getButtonText()}
-        </Button>
-
-        {error && (
-          <div className="text-sm text-red-500 bg-red-50 p-3 rounded-lg w-full">
-            Error: {error}
+          <div className="w-full">
+            <h2 className="text-xl font-semibold mb-4">Token Deposit</h2>
+            <TokenInput
+              value={tokenAmount}
+              onValueChange={setTokenAmount}
+              selectedToken={selectedToken}
+              onTokenSelect={setSelectedToken}
+              hasInsufficientBalance={hasInsufficientBalance()}
+            />
           </div>
-        )}
+
+          <Button
+            onClick={handleButtonClick}
+            disabled={!isWalletConnected ? false : !canDeposit || isLoading}
+            className="w-full"
+          >
+            {getButtonText()}
+          </Button>
+
+          {error && (
+            <div className="text-sm text-red-500 bg-red-50 p-3 rounded-lg w-full">
+              Error: {error}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      <TransactionDialog
+        open={isWaitingForWallet}
+        onClose={handleCancelTransaction}
+      />
+    </>
   );
 }
 

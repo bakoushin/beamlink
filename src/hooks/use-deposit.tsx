@@ -34,6 +34,7 @@ interface UseDepositReturn {
   ) => Promise<DepositResult>;
   isLoading: boolean;
   error: string | null;
+  cancelTransaction: () => void;
 }
 
 // Helper function to check if a token is SOL
@@ -211,9 +212,15 @@ export function useDeposit(): UseDepositReturn {
     }
   };
 
+  const cancelTransaction = () => {
+    setIsLoading(false);
+    setError(null);
+  };
+
   return {
     deposit,
     isLoading,
     error,
+    cancelTransaction,
   };
 }
