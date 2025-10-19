@@ -553,7 +553,7 @@ function AppContent() {
 
         <Button
           onClick={handleButtonClick}
-          disabled={!isWalletConnected ? false : (!canDeposit || isLoading)}
+          disabled={!isWalletConnected ? false : !canDeposit || isLoading}
           className="w-full"
         >
           {getButtonText()}

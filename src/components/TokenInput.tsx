@@ -27,7 +27,7 @@ export function TokenInput({
   onTokenDeselect,
   disabled = false,
   className = "",
-  placeholder = "0.00",
+  placeholder = "0",
 }: TokenInputProps) {
   const [isTokenSelectorOpen, setIsTokenSelectorOpen] = React.useState(false);
   const [imageLoaded, setImageLoaded] = React.useState(false);
@@ -40,6 +40,13 @@ export function TokenInput({
     setImageError(false);
   }, [selectedToken]);
 
+  // Clear value when token changes
+  React.useEffect(() => {
+    if (selectedToken) {
+      onValueChange("");
+    }
+  }, [selectedToken, onValueChange]);
+
   // Get token icon - handle both Token and UserTokenBalance types
   const tokenIcon = selectedToken
     ? "icon" in selectedToken
@@ -49,6 +56,83 @@ export function TokenInput({
 
   const tokenSymbol = selectedToken?.symbol ?? null;
   const tokenDecimals = selectedToken?.decimals ?? 9;
+
+  // Cleanup function for input values
+  const cleanInputValue = (value: string): string => {
+    return value
+      .replace(/[^\d,.]/g, "") // keep only digits, commas, and dots
+      .replace(/^0+(\d)/, "$1") // remove leading zeros
+      .replace(/[,.](?=.*[,.])/g, "") // remove grouping separators (comma/dot with another comma/dot after)
+      .replace(",", ".") // convert remaining comma to a dot
+      .replace(/^\./, "0."); // if the input starts with decimal separator then turn it into "0."
+  };
+
+  // Handle key down events for input validation
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const target = e.target as HTMLInputElement;
+    const key = e.key;
+    const cursorPos = target.selectionStart || 0;
+
+    // Allow Ctrl/Cmd combinations (copy, paste, select all, etc.)
+    if (e.ctrlKey || e.metaKey) {
+      return;
+    }
+
+    // Allow navigation and editing keys
+    const allowedNavigationKeys = [
+      "Backspace",
+      "Delete",
+      "ArrowLeft",
+      "ArrowRight",
+      "ArrowUp",
+      "ArrowDown",
+      "Home",
+      "End",
+      "Tab",
+      "Enter",
+      "Escape",
+    ];
+
+    // Check if key is digit, comma, dot, or allowed navigation key
+    const isDigit = /^[\d,.]$/.test(key);
+    const isAllowedKey = allowedNavigationKeys.includes(key);
+
+    if (!isDigit && !isAllowedKey) {
+      e.preventDefault();
+      return;
+    }
+
+    const newValue = value.slice(0, cursorPos) + key + value.slice(cursorPos);
+
+    // Prevent adding a separator when there's already one
+    if (value.includes(".") && (key === "." || key === ",")) {
+      const prevSeparatorCount = (value.match(/[,.]/g) || []).length;
+      const newSeparatorCount = (newValue.match(/[,.]/g) || []).length;
+
+      // If an additional separator would be added
+      if (newSeparatorCount === prevSeparatorCount + 1) {
+        // Remove all separators and compare the rest
+        const prevWithoutSeparators = value.replace(/[,.]/g, "");
+        const newWithoutSeparators = newValue.replace(/[,.]/g, "");
+        if (prevWithoutSeparators === newWithoutSeparators) {
+          e.preventDefault();
+          return;
+        }
+      }
+    }
+
+    // Check if the new character would exceed decimal limits
+    const cleanValue = cleanInputValue(newValue);
+
+    const maxDecimals = tokenDecimals;
+    const decimalRegex = new RegExp(`^\\d*\\.?\\d{0,${maxDecimals}}$`);
+    const isValid = decimalRegex.test(cleanValue);
+
+    if (!isValid) {
+      e.preventDefault();
+      return;
+    }
+  };
 
   // Get USD price - handle both Token and UserTokenBalance types
   const usdPrice = selectedToken
@@ -69,40 +153,24 @@ export function TokenInput({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;
 
-    let inputValue = e.target.value;
-
     // If no token is selected, don't allow input
     if (!selectedToken) {
       return;
     }
 
-    // Remove any characters that are not numbers, dots, or commas
-    inputValue = inputValue.replace(/[^\d.,]/g, "");
+    const inputValue = e.target.value;
+    const cleanedValue = cleanInputValue(inputValue);
 
-    // Replace commas with dots for consistency
-    inputValue = inputValue.replace(/,/g, ".");
+    // Apply decimal limit based on token decimals
+    const maxDecimals = tokenDecimals;
+    const parts = cleanedValue.split(".");
+    let finalValue = cleanedValue;
 
-    // Only allow one decimal point
-    const parts = inputValue.split(".");
-    if (parts.length > 2) {
-      inputValue = parts[0] + "." + parts.slice(1).join("");
+    if (parts.length === 2 && parts[1].length > maxDecimals) {
+      finalValue = parts[0] + "." + parts[1].slice(0, maxDecimals);
     }
 
-    // Limit decimal places based on token decimals
-    if (parts.length === 2 && parts[1].length > tokenDecimals) {
-      inputValue = parts[0] + "." + parts[1].slice(0, tokenDecimals);
-    }
-
-    // Don't allow multiple leading zeros
-    if (
-      inputValue.length > 1 &&
-      inputValue[0] === "0" &&
-      inputValue[1] !== "."
-    ) {
-      inputValue = inputValue.replace(/^0+/, "0");
-    }
-
-    onValueChange(inputValue);
+    onValueChange(finalValue);
   };
 
   // Handle container click - open token selector if no token selected
@@ -150,6 +218,7 @@ export function TokenInput({
             inputMode="decimal"
             value={value}
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={disabled || !selectedToken}
             className={`
@@ -233,4 +302,3 @@ export function TokenInput({
     </div>
   );
 }
-
