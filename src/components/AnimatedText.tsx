@@ -39,7 +39,7 @@ export function AnimatedText() {
         {/* Current word */}
         <span
           key={`current-${currentIndex}`}
-          className={`inline-block transition-all ease-in-out ${
+          className={`inline-block transition-all ease-in-out text-muted-foreground ${
             isTransitioning
               ? "opacity-0 -translate-y-8 duration-300"
               : "opacity-100 translate-y-0 duration-500"
@@ -51,7 +51,7 @@ export function AnimatedText() {
         {/* Next word */}
         <span
           key={`next-${nextIndex}`}
-          className={`inline-block transition-all duration-500 ease-in-out absolute ${
+          className={`inline-block transition-all duration-500 ease-in-out absolute text-muted-foreground ${
             isTransitioning
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-full"
