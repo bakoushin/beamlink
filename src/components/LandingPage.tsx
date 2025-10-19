@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedText } from "@/components/AnimatedText";
 import { TokenInput } from "@/components/TokenInput";
+import { FaucetModal } from "@/components/FaucetModal";
 import {
   MessageSquare,
   Smartphone,
@@ -65,6 +66,8 @@ export function LandingPage({
   isWalletConnected,
   error,
 }: LandingPageProps) {
+  const [isFaucetModalOpen, setIsFaucetModalOpen] = useState(false);
+
   return (
     <div className="w-full">
       {/* Hero Section */}
@@ -91,7 +94,12 @@ export function LandingPage({
           </p>
 
           <div className="max-w-md mx-auto mb-12" data-section="try-beamlink">
-            <h2 className="text-2xl font-bold mb-6">Try BeamLink</h2>
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <h2 className="text-2xl font-bold">Try BeamLink</h2>
+              <Badge variant="secondary" className="text-xs">
+                devnet
+              </Badge>
+            </div>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -133,6 +141,16 @@ export function LandingPage({
                 Error: {error}
               </div>
             )}
+
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={() => setIsFaucetModalOpen(true)}
+                className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+              >
+                How to get Devnet tokens?
+              </button>
+            </div>
           </div>
 
           <div className="text-center mt-16">
@@ -464,6 +482,11 @@ export function LandingPage({
           </div>
         </div>
       </div>
+
+      <FaucetModal
+        open={isFaucetModalOpen}
+        onOpenChange={setIsFaucetModalOpen}
+      />
     </div>
   );
 }
