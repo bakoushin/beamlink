@@ -582,13 +582,17 @@ function AppContent() {
                         This deposit has already been claimed
                       </p>
                     </div>
-                  ) : (
+                  ) : isWalletConnected ? (
                     <Button
                       onClick={handleClaim}
                       disabled={isClaiming}
                       className="w-full"
                     >
                       {isClaiming ? "Claiming..." : "Claim"}
+                    </Button>
+                  ) : (
+                    <Button onClick={() => setVisible(true)} className="w-full">
+                      Connect wallet to claim
                     </Button>
                   )}
                 </div>
