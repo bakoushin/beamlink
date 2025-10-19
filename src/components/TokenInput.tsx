@@ -262,7 +262,7 @@ export function TokenInput({
           trigger={
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               disabled={disabled}
               className={`
                 flex items-center gap-2 h-10 px-3

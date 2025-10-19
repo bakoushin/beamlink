@@ -85,7 +85,7 @@ export function WalletMultiButton({
   return (
     <>
       <Button
-        variant="outline"
+        variant="secondary"
         className="gap-4"
         onClick={() => setDialogOpen(true)}
       >
