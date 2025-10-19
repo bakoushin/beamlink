@@ -208,12 +208,12 @@ export function TokenInput({
         onClick={handleContainerClick}
         className={`
           flex items-center gap-2 p-4 
-          rounded-lg border
+          rounded-lg rainbow-border
           shadow-sm hover:shadow-md
           transition-all duration-200
           ${
             !selectedToken
-              ? "cursor-pointer hover:border-primary/50 bg-gradient-to-br from-violet-50/50 to-purple-50/50 dark:from-violet-950/20 dark:to-purple-950/20 hover:from-violet-50 hover:to-purple-50 dark:hover:from-violet-950/30 dark:hover:to-purple-950/30"
+              ? "cursor-pointer bg-gradient-to-br from-violet-50/50 to-purple-50/50 dark:from-violet-950/20 dark:to-purple-950/20 hover:from-violet-50 hover:to-purple-50 dark:hover:from-violet-950/30 dark:hover:to-purple-950/30"
               : disabled
               ? "cursor-not-allowed opacity-50"
               : "bg-gradient-to-br from-violet-50/30 to-purple-50/30 dark:from-violet-950/10 dark:to-purple-950/10 hover:from-violet-50/50 hover:to-purple-50/50 dark:hover:from-violet-950/20 dark:hover:to-purple-950/20 hover:shadow-lg"

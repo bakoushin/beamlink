@@ -177,3 +177,38 @@
     width: 100%;
   }
 }
+
+/* Rainbow border animation */
+@keyframes rainbow-rotate {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+.rainbow-border {
+  position: relative;
+  border: none !important;
+}
+
+.rainbow-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    90deg,
+    hsl(280, 100%, 65%),
+    hsl(240, 100%, 65%),
+    hsl(200, 100%, 65%),
+    hsl(280, 100%, 65%)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: rainbow-rotate 20s linear infinite;
+  pointer-events: none;
+}
