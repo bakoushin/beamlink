@@ -205,21 +205,27 @@ function AppContent() {
   // Helper function to check if user has sufficient balance
   const hasInsufficientBalance = (): boolean => {
     if (!selectedToken || !tokenAmount || !userBalances) return false;
-    
+
     const inputAmount = parseFloat(tokenAmount);
     if (isNaN(inputAmount) || inputAmount <= 0) return false;
 
     // Find the user's balance for the selected token
-    const tokenId = "id" in selectedToken ? selectedToken.id : selectedToken.address;
-    const userBalance = userBalances.find(balance => balance.address === tokenId);
-    
+    const tokenId =
+      "id" in selectedToken ? selectedToken.id : selectedToken.address;
+    const userBalance = userBalances.find(
+      (balance) => balance.address === tokenId
+    );
+
     if (!userBalance) return true; // No balance found means insufficient
-    
+
     return inputAmount > userBalance.balance;
   };
 
   const canDeposit =
-    selectedToken && tokenAmount && parseFloat(tokenAmount) > 0 && !hasInsufficientBalance();
+    selectedToken &&
+    tokenAmount &&
+    parseFloat(tokenAmount) > 0 &&
+    !hasInsufficientBalance();
 
   // Check if wallet is connected
   const isWalletConnected = wallet && publicKey;
@@ -572,12 +578,6 @@ function AppContent() {
             hasInsufficientBalance={hasInsufficientBalance()}
           />
         </div>
-
-        {selectedToken && tokenAmount && (
-          <div className="text-sm text-muted-foreground">
-            You entered: {tokenAmount} {selectedToken.symbol}
-          </div>
-        )}
 
         <Button
           onClick={handleButtonClick}

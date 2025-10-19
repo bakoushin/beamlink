@@ -145,9 +145,10 @@ export function TokenInput({
 
   // Calculate USD value
   const usdValue = React.useMemo(() => {
-    if (!value || !usdPrice || value === "0" || value === "0.") return null;
+    if (!usdPrice) return "no-price"; // Special value to indicate no price available
+    if (!value || value === "0" || value === "0.") return "zero"; // Special value for empty input with price
     const numValue = parseFloat(value);
-    if (isNaN(numValue)) return null;
+    if (isNaN(numValue)) return "zero";
     return numValue * usdPrice;
   }, [value, usdPrice]);
 
@@ -200,7 +201,7 @@ export function TokenInput({
       <div
         onClick={handleContainerClick}
         className={`
-          flex items-start gap-2 p-4 
+          flex items-center gap-2 p-4 
           rounded-lg border bg-background
           transition-all duration-200
           ${
@@ -213,7 +214,11 @@ export function TokenInput({
         `}
       >
         {/* Input area */}
-        <div className="flex-1 flex flex-col gap-1 min-w-0">
+        <div className="flex-1 flex flex-col gap-1 min-w-0 relative">
+          {/* Send label - absolutely positioned */}
+          <div className="absolute -top-2 left-0 text-sm text-muted-foreground/70 text-left">
+            Send
+          </div>
           <input
             ref={inputRef}
             type="text"
@@ -226,7 +231,7 @@ export function TokenInput({
             className={`
               text-3xl font-semibold bg-transparent border-none outline-none 
               w-full placeholder:text-muted-foreground/40
-              disabled:cursor-not-allowed
+              disabled:cursor-not-allowed py-6
               ${hasInsufficientBalance ? "text-red-600" : ""}
               ${!selectedToken ? "cursor-pointer" : ""}
             `}
@@ -237,12 +242,14 @@ export function TokenInput({
               }
             }}
           />
-          {/* USD value */}
-          <div className="text-sm text-muted-foreground">
-            {usdValue !== null ? (
-              <span>{formatPrice(usdValue)}</span>
+          {/* USD value - absolutely positioned */}
+          <div className="absolute -bottom-2 left-0 text-sm text-muted-foreground/70 text-left">
+            {usdValue === "no-price" ? (
+              <span>—</span>
+            ) : usdValue === "zero" ? (
+              <span>$0</span>
             ) : (
-              <span className="opacity-0">—</span>
+              <span>{formatPrice(usdValue)}</span>
             )}
           </div>
         </div>
