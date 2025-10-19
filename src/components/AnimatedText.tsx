@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 
-const words = ["SMS", "Telegram", "WhatsApp", "iMessage", "gift card"];
+const words = [
+  "SMS",
+  "Telegram",
+  "Discord",
+  "WhatsApp",
+  "iMessage",
+  "gift card",
+];
 
 export function AnimatedText() {
   const [currentIndex, setCurrentIndex] = useState(0);
