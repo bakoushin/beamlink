@@ -627,23 +627,59 @@ function AppContent() {
         <div className="flex flex-col items-center gap-4 w-full max-w-md">
           <WalletMultiButton />
 
-          <div className="flex flex-col items-center gap-4 p-8 bg-green-50 rounded-lg w-full">
-            <div className="relative">
-              <CheckCircle className="h-16 w-16 text-green-600 animate-pulse" />
-              <div className="absolute inset-0 h-16 w-16 border-4 border-green-200 rounded-full animate-ping"></div>
+          <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-lg border w-full">
+            <div className="relative h-20 w-20 mb-4">
+              {/* Animated rainbow circle background */}
+              <div
+                className="absolute inset-0 h-20 w-20 rounded-full animate-spin animate-pulse"
+                style={{
+                  background:
+                    "conic-gradient(from 0deg, #00FFA3, #FFE500, #DC1FFF, #00FFA3)",
+                  animation:
+                    "spin 3s linear infinite, pulse 2s ease-in-out infinite",
+                  opacity: 0.5,
+                  mask: "radial-gradient(circle, transparent 40%, black 40%)",
+                  WebkitMask:
+                    "radial-gradient(circle, transparent 40%, black 40%)",
+                }}
+              />
+              {/* Checkmark icon */}
+              <div
+                className="absolute inset-0 h-20 w-20 z-10 flex items-center justify-center"
+                style={{
+                  filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
+                }}
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-green-600"
+                >
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+              </div>
             </div>
 
             <div className="text-center">
-              <h3 className="text-lg font-semibold text-green-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 BeamLink Created!
               </h3>
-              <p className="text-green-700 mb-4">Now you can share it</p>
+              <p className="text-gray-700 mb-4 text-center w-4/5 mx-auto">
+                Make sure to save this link — it will disappear when you close
+                this tab
+              </p>
             </div>
 
             <div className="w-full space-y-3">
-              <div className="bg-white p-3 rounded-lg border">
+              <div className="bg-gray-100 p-3 rounded-lg border border-gray-200">
                 <div
-                  className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors"
+                  className="flex items-center space-x-2 cursor-pointer hover:bg-gray-200 rounded-lg px-3 py-2 transition-colors"
                   onClick={copyLink}
                 >
                   <span className="font-mono text-sm text-gray-600 break-all flex-1">
@@ -663,27 +699,22 @@ function AppContent() {
                   className="w-full flex items-center gap-2 py-3"
                 >
                   <Share className="h-5 w-5" />
-                  Share BeamLink
+                  Share
                 </Button>
+                <p className="text-sm text-gray-500 text-center w-4/5 mx-auto">
+                  Important: This link gives access to funds — only share with
+                  trusted recipients
+                </p>
               </div>
 
               <div className="flex flex-col gap-2 mt-4">
-                <Button
+                <button
                   onClick={() => window.open(depositLink, "_blank")}
-                  variant="secondary"
-                  className="w-full flex items-center gap-2"
+                  className="text-blue-600 hover:text-blue-800 underline text-sm flex items-center gap-1 justify-center"
                 >
                   <ExternalLink className="h-4 w-4" />
                   Open Link
-                </Button>
-
-                <Button
-                  onClick={handleNewDeposit}
-                  variant="secondary"
-                  className="w-full"
-                >
-                  Create New BeamLink
-                </Button>
+                </button>
               </div>
             </div>
           </div>
