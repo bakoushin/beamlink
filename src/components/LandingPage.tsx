@@ -19,6 +19,11 @@ import {
   Smartphone as Phone,
   Send,
   Wallet,
+  Coins,
+  Cake,
+  CreditCard,
+  Briefcase,
+  Heart,
 } from "lucide-react";
 import type { Token } from "@/types/token";
 import type { UserTokenBalance } from "@/queries";
@@ -148,7 +153,7 @@ export function LandingPage({
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="p-6 rounded-lg border bg-card">
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mb-4">
-                <Gift className="w-6 h-6 text-blue-600" />
+                <Coins className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Tipping Creators</h3>
               <p className="text-muted-foreground">
@@ -159,7 +164,7 @@ export function LandingPage({
 
             <div className="p-6 rounded-lg border bg-card">
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center mb-4">
-                <Gift className="w-6 h-6 text-green-600" />
+                <Cake className="w-6 h-6 text-green-600" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Birthday Money</h3>
               <p className="text-muted-foreground">
@@ -170,7 +175,7 @@ export function LandingPage({
 
             <div className="p-6 rounded-lg border bg-card">
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-purple-600" />
+                <Briefcase className="w-6 h-6 text-purple-600" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Paying Freelancers</h3>
               <p className="text-muted-foreground">
@@ -181,7 +186,7 @@ export function LandingPage({
 
             <div className="p-6 rounded-lg border bg-card">
               <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center mb-4">
-                <Gift className="w-6 h-6 text-orange-600" />
+                <CreditCard className="w-6 h-6 text-orange-600" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Crypto Gift Cards</h3>
               <p className="text-muted-foreground">
@@ -201,7 +206,7 @@ export function LandingPage({
 
             <div className="p-6 rounded-lg border bg-card">
               <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/20 rounded-lg flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-indigo-600" />
+                <Heart className="w-6 h-6 text-indigo-600" />
               </div>
               <h3 className="text-xl font-semibold mb-2">
                 Get Grandma into Solana
