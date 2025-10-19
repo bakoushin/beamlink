@@ -138,14 +138,16 @@ export function TokenInput({
 
   // Get USD price - handle both Token and UserTokenBalance types
   const usdPrice = selectedToken
-    ? "usdPrice" in selectedToken && selectedToken.usdPrice !== null
+    ? "usdPrice" in selectedToken &&
+      selectedToken.usdPrice !== null &&
+      selectedToken.usdPrice !== undefined
       ? selectedToken.usdPrice
       : null
     : null;
 
   // Calculate USD value
   const usdValue = React.useMemo(() => {
-    if (!usdPrice) return "no-price"; // Special value to indicate no price available
+    if (usdPrice === null || usdPrice === undefined) return "no-price"; // Special value to indicate no price available
     if (!value || value === "0" || value === "0.") return "zero"; // Special value for empty input with price
     const numValue = parseFloat(value);
     if (isNaN(numValue)) return "zero";

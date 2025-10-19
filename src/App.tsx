@@ -103,9 +103,75 @@ function AppContent() {
   }, []);
 
   const [tokenAmount, setTokenAmount] = useState("");
+  
+  // Default SOL token object
+  const defaultSolToken: Token = {
+    id: "So11111111111111111111111111111111111111112",
+    name: "Solana",
+    symbol: "SOL",
+    icon: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
+    decimals: 9,
+    circSupply: 0,
+    totalSupply: 0,
+    tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    firstPool: {
+      id: "",
+      createdAt: ""
+    },
+    holderCount: 0,
+    audit: {
+      topHoldersPercentage: 0
+    },
+    organicScore: 0,
+    organicScoreLabel: "",
+    tags: [],
+    fdv: 0,
+    mcap: 0,
+    usdPrice: 0,
+    priceBlockId: 0,
+    liquidity: 0,
+    stats5m: {
+      priceChange: 0,
+      buyVolume: 0,
+      sellVolume: 0,
+      numBuys: 0,
+      numSells: 0,
+      numTraders: 0,
+      numNetBuyers: 0
+    },
+    stats1h: {
+      priceChange: 0,
+      buyVolume: 0,
+      sellVolume: 0,
+      numBuys: 0,
+      numSells: 0,
+      numTraders: 0,
+      numNetBuyers: 0
+    },
+    stats6h: {
+      priceChange: 0,
+      buyVolume: 0,
+      sellVolume: 0,
+      numBuys: 0,
+      numSells: 0,
+      numTraders: 0,
+      numNetBuyers: 0
+    },
+    stats24h: {
+      priceChange: 0,
+      buyVolume: 0,
+      sellVolume: 0,
+      numBuys: 0,
+      numSells: 0,
+      numTraders: 0,
+      numNetBuyers: 0
+    },
+    updatedAt: new Date().toISOString()
+  };
+  
   const [selectedToken, setSelectedToken] = useState<
     Token | UserTokenBalance | null
-  >(null);
+  >(defaultSolToken);
   const [depositResult, setDepositResult] = useState<{
     signature: string;
     depositId: string;
@@ -138,7 +204,7 @@ function AppContent() {
       });
       // Reset form after successful deposit
       setTokenAmount("");
-      setSelectedToken(null);
+      setSelectedToken(defaultSolToken);
     } catch (err) {
       console.error("Deposit failed:", err);
       // Keep form state on error so user can try again
