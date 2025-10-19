@@ -14,16 +14,22 @@ export function AnimatedText() {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % words.length);
-        setIsTransitioning(false);
-      }, 500); // Match the CSS transition duration
-    }, 2500); // Change word every 2.5 seconds
+    const scheduleNext = () => {
+      // Add extra delay when looping back from last to first
+      const isLastItem = currentIndex === words.length - 1;
+      const delay = isLastItem ? 4000 : 2500;
 
-    return () => clearInterval(interval);
-  }, []);
+      setTimeout(() => {
+        setIsTransitioning(true);
+        setTimeout(() => {
+          setCurrentIndex((prevIndex) => (prevIndex + 1) % words.length);
+          setIsTransitioning(false);
+        }, 500); // Match the CSS transition duration
+      }, delay);
+    };
+
+    scheduleNext();
+  }, [currentIndex]);
 
   const nextIndex = (currentIndex + 1) % words.length;
 
