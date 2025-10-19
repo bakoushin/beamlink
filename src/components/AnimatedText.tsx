@@ -21,15 +21,15 @@ export function AnimatedText() {
   const nextIndex = (currentIndex + 1) % words.length;
 
   return (
-    <div className="relative inline-block min-h-[1.2em]">
-      <div className="relative flex justify-center items-center">
+    <div className="relative inline-block py-2 overflow-visible">
+      <div className="relative flex justify-center items-center overflow-visible">
         {/* Current word */}
         <span
           key={`current-${currentIndex}`}
-          className={`inline-block transition-all duration-500 ease-in-out ${
+          className={`inline-block transition-all ease-in-out ${
             isTransitioning
-              ? "opacity-0 -translate-y-full"
-              : "opacity-100 translate-y-0"
+              ? "opacity-0 -translate-y-8 duration-300"
+              : "opacity-100 translate-y-0 duration-500"
           }`}
           style={{
             background: "linear-gradient(135deg, #00FFA3, #FFE500, #DC1FFF)",

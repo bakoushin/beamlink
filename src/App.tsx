@@ -766,10 +766,12 @@ function AppContent() {
 
       {/* Hero Section */}
       <div className="flex flex-col items-center px-8 mt-12 mb-4">
-        <h1 className="text-4xl md:text-5xl font-bold text-center leading-tight flex flex-col items-center">
-          <div>Send tokens as links in</div>
-          <AnimatedText />
-          <div className="mt-0 max-w-md">
+        <h1 className="text-4xl md:text-5xl font-bold text-center flex flex-col items-center">
+          <div className="leading-none -mb-6">Send tokens as links in</div>
+          <div className="leading-normal">
+            <AnimatedText />
+          </div>
+          <div className="leading-none -mt-6 max-w-md">
             without even asking for wallet addresses
           </div>
         </h1>
