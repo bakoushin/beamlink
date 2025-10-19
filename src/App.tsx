@@ -475,10 +475,10 @@ function AppContent() {
           <Header onLogoClick={handleLogoClick} />
           <div className="flex flex-col items-center p-8 mt-8 gap-8 flex-1 w-full">
             <div className="flex flex-col items-center gap-4 w-full max-w-md">
-              <div className="flex flex-col items-center gap-4 p-8 bg-primary/10 rounded-lg w-full">
+              <div className="flex flex-col items-center gap-4 p-8 border-2 border-primary/20 rounded-lg w-full bg-transparent">
                 <div className="relative">
-                  <CheckCircle className="h-16 w-16 text-primary animate-pulse" />
-                  <div className="absolute inset-0 h-16 w-16 border-4 border-primary/20 rounded-full animate-ping"></div>
+                  <CheckCircle className="h-16 w-16 text-green-500 animate-pulse" />
+                  <div className="absolute inset-0 h-16 w-16 border-4 border-green-500/30 rounded-full animate-ping"></div>
                 </div>
 
                 <div className="text-center">
@@ -486,37 +486,47 @@ function AppContent() {
                     Successfully Claimed!
                   </h3>
                   <p className="text-primary/80 mb-4">
-                    Your deposit has been claimed to your wallet
+                    BeamLink has been claimed to your wallet
                   </p>
                 </div>
 
-                <div className="w-full space-y-3">
-                  <div className="bg-background p-3 rounded-lg border">
-                    <label className="text-sm font-medium text-muted-foreground block mb-2">
-                      Transaction Signature:
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={claimResult}
-                        readOnly
-                        className="flex-1 text-xs bg-muted p-2 rounded border"
-                      />
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyToClipboard(claimResult)}
-                        className="flex items-center gap-1"
-                      >
-                        <Copy className="h-4 w-4" />
-                        Copy
-                      </Button>
+                {/* Token Amount Display - Similar to claim page */}
+                {withdrawInfo && (
+                  <div className="text-center w-full">
+                    <div
+                      className="text-5xl font-black text-foreground mb-1 px-6 py-4 rounded-xl break-all overflow-hidden"
+                      style={{ fontFamily: "'IBM Plex Mono', monospace" }}
+                    >
+                      {withdrawInfo.amount}
                     </div>
+                    <div className="text-xl font-semibold text-muted-foreground flex items-center justify-center gap-2">
+                      {withdrawInfo.token?.icon && (
+                        <img
+                          src={withdrawInfo.token.icon}
+                          alt={withdrawInfo.token?.symbol || "Token"}
+                          className="w-8 h-8 rounded-full"
+                        />
+                      )}
+                      <span>{withdrawInfo.token?.symbol || "BeamLink"}</span>
+                    </div>
+                    {withdrawInfo.usdValue && (
+                      <div className="text-base text-muted-foreground/80 mt-2">
+                        ${withdrawInfo.usdValue.toFixed(2)} USD
+                      </div>
+                    )}
                   </div>
+                )}
 
-                  <Button onClick={handleNewWithdraw} className="w-full">
-                    Create New Deposit
-                  </Button>
+                <div className="text-center mt-12">
+                  <a
+                    href={`https://solscan.io/tx/${claimResult}?cluster=devnet`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:text-primary/80 underline flex items-center justify-center gap-1"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    View on Solscan
+                  </a>
                 </div>
               </div>
             </div>
