@@ -146,7 +146,7 @@ function TokenList({
   };
 
   return (
-    <div className="px-4 flex flex-col gap-4">
+    <div className="flex flex-col gap-4 px-4 py-0 sm:px-0">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
@@ -170,13 +170,16 @@ function TokenList({
           </button>
         )}
       </div>
-      <div className="overflow-y-auto flex-1">
+      <div
+        className="overflow-y-auto flex-1 -mx-4 px-4"
+        style={{ maxHeight: "calc(80vh - 180px)" }}
+      >
         {isLoading ? (
           <div className="text-center text-muted-foreground py-8">
             Loading tokens...
           </div>
         ) : (
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-3">
             {filteredTokens.length > 0 ? (
               filteredTokens.map((token) => (
                 <TokenRow
