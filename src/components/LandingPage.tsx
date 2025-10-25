@@ -14,7 +14,6 @@ import {
   CheckCircle,
   Code,
   Send,
-  Wallet,
   Coins,
   Cake,
   CreditCard,
