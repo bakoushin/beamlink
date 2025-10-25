@@ -1,5 +1,3 @@
-// Claim API service for relayer-based claim transactions
-
 interface ClaimRequest {
   transaction: string; // base64 encoded partially signed transaction
   depositId: string;
@@ -14,7 +12,6 @@ interface ClaimResponse {
   error?: string;
 }
 
-// API base URL - you can configure this based on your environment
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 
