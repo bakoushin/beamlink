@@ -206,7 +206,7 @@ export function TokenInput({
         onClick={handleContainerClick}
         className={`
           flex items-center gap-2 p-4 
-          rounded-lg rainbow-border
+          rounded-lg token-input-border
           shadow-sm hover:shadow-md
           transition-all duration-200
           ${

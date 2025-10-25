@@ -178,37 +178,40 @@
   }
 }
 
-/* Rainbow border animation */
-@keyframes rainbow-rotate {
+/* Blue-purple border animation */
+@keyframes token-input-border-rotate {
   0% {
-    filter: hue-rotate(0deg);
+    background: linear-gradient(90deg, #2563eb, #9333ea, #2563eb, #9333ea);
+  }
+  25% {
+    background: linear-gradient(90deg, #9333ea, #2563eb, #9333ea, #2563eb);
+  }
+  50% {
+    background: linear-gradient(90deg, #2563eb, #9333ea, #2563eb, #9333ea);
+  }
+  75% {
+    background: linear-gradient(90deg, #9333ea, #2563eb, #9333ea, #2563eb);
   }
   100% {
-    filter: hue-rotate(360deg);
+    background: linear-gradient(90deg, #2563eb, #9333ea, #2563eb, #9333ea);
   }
 }
 
-.rainbow-border {
+.token-input-border {
   position: relative;
   border: none !important;
 }
 
-.rainbow-border::before {
+.token-input-border::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   padding: 2px;
-  background: linear-gradient(
-    90deg,
-    hsl(280, 100%, 65%),
-    hsl(240, 100%, 65%),
-    hsl(200, 100%, 65%),
-    hsl(280, 100%, 65%)
-  );
+  background: linear-gradient(90deg, #2563eb, #9333ea, #2563eb, #9333ea);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  animation: rainbow-rotate 20s linear infinite;
+  animation: token-input-border-rotate 20s linear infinite;
   pointer-events: none;
 }
