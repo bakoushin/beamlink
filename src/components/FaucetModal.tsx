@@ -52,14 +52,14 @@ export function FaucetModal({ open, onOpenChange }: FaucetModalProps) {
 
             <div className="flex items-center gap-3 p-3 border rounded-lg">
               <img
-                src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png"
-                alt="USDC"
+                src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Dn4noZ5jgGfkntzcQSUZ8czkreiZ1ForXYoV2H8Dm7S1/logo.png"
+                alt="EURC"
                 className="h-5 w-5 rounded-full"
               />
               <div className="flex-1">
-                <div className="font-medium">Devnet USDC</div>
+                <div className="font-medium">Devnet EURC</div>
                 <div className="text-sm text-muted-foreground">
-                  Get free USDC for testing transfers
+                  Get free EURC for testing transfers
                 </div>
               </div>
               <Button
@@ -71,7 +71,7 @@ export function FaucetModal({ open, onOpenChange }: FaucetModalProps) {
                 className="flex items-center gap-2"
               >
                 <ExternalLink className="h-4 w-4" />
-                Get USDC
+                Get EURC
               </Button>
             </div>
 
