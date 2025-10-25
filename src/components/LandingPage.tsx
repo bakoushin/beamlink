@@ -25,6 +25,7 @@ import {
   Server,
   ArrowDown,
   ArrowRight as ArrowRightIcon,
+  Github,
 } from "lucide-react";
 import type { Token } from "@/types/token";
 import type { UserTokenBalance } from "@/queries";
@@ -356,7 +357,7 @@ export function LandingPage({
                 {/* Step 1: Deposit */}
                 <div className="text-center flex-shrink-0">
                   <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Wallet className="w-10 h-10 text-blue-600" />
+                    <Lock className="w-10 h-10 text-blue-600" />
                   </div>
                   <h4 className="text-lg font-semibold mb-2">1. Deposit</h4>
                   <p className="text-base text-muted-foreground">
@@ -472,9 +473,39 @@ export function LandingPage({
               </div>
               <h3 className="text-lg font-semibold mb-2">Secure & Trustless</h3>
               <p className="text-muted-foreground text-sm">
-                Withdrawals are possible even when relayer is down
+                Withdrawals are possible even when relayer is down by
+                interacting with the contract directly.
               </p>
             </div>
+          </div>
+
+          {/* GitHub Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
+            <Button
+              variant="outline"
+              size="lg"
+              className="flex items-center gap-2"
+              onClick={() =>
+                window.open(
+                  "https://github.com/bakoushin/beamlink-program",
+                  "_blank"
+                )
+              }
+            >
+              <Github className="w-5 h-5" />
+              Smart Contract
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className="flex items-center gap-2"
+              onClick={() =>
+                window.open("https://github.com/bakoushin/beamlink", "_blank")
+              }
+            >
+              <Github className="w-5 h-5" />
+              Frontend code
+            </Button>
           </div>
         </div>
       </div>
@@ -509,7 +540,8 @@ export function LandingPage({
               <Shield className="w-12 h-12 text-green-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">Secure</h3>
               <p className="text-muted-foreground">
-                Use well-tested and audited infrastructure.
+                Use battle-tested smart contracts. No need to reinvent the
+                wheel.
               </p>
             </div>
           </div>
