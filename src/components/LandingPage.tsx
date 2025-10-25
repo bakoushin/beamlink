@@ -78,10 +78,24 @@ export function LandingPage({
       {/* Hero Section */}
       <div className="text-center py-16 px-4">
         <div className="max-w-4xl mx-auto">
-          <Badge variant="outline" className="mb-6 text-sm px-4 py-2">
-            <Zap className="w-4 h-4 mr-2" />
-            Built on Solana
-          </Badge>
+          <div className="flex flex-wrap justify-center gap-3 mb-6">
+            <Badge variant="outline" className="text-sm px-4 py-2">
+              <img
+                src="/solana-logo.png"
+                alt="Solana"
+                className="w-6 h-6 mr-2 rounded-full"
+              />
+              Built on Solana
+            </Badge>
+            <Badge variant="outline" className="text-sm px-4 py-2">
+              <img
+                src="/shipyard-netherlands-logo.png"
+                alt="Shipyard Netherlands"
+                className="w-6 h-6 mr-2 rounded-full"
+              />
+              Shipyard Netherlands
+            </Badge>
+          </div>
 
           <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight flex flex-col items-center">
             <div className="leading-none -mb-6">Send crypto like you send</div>
