@@ -6,18 +6,13 @@ import { TokenInput } from "@/components/TokenInput";
 import { FaucetModal } from "@/components/FaucetModal";
 import {
   MessageSquare,
-  Smartphone,
   QrCode,
-  Gift,
   Zap,
   Shield,
-  Globe,
   Users,
   ArrowRight,
   CheckCircle,
-  Star,
   Code,
-  Smartphone as Phone,
   Send,
   Wallet,
   Coins,
@@ -33,13 +28,6 @@ import {
 } from "lucide-react";
 import type { Token } from "@/types/token";
 import type { UserTokenBalance } from "@/queries";
-
-const scrollToCreate = () => {
-  const element = document.getElementById("create-beamlink");
-  if (element) {
-    element.scrollIntoView({ behavior: "smooth" });
-  }
-};
 
 const scrollToTry = () => {
   const element = document.querySelector('[data-section="try-beamlink"]');

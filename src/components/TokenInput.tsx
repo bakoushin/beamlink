@@ -13,7 +13,6 @@ interface TokenInputProps {
   onValueChange: (value: string) => void;
   selectedToken: Token | UserTokenBalance | null;
   onTokenSelect: (token: Token | UserTokenBalance) => void;
-  onTokenDeselect?: () => void;
   disabled?: boolean;
   className?: string;
   placeholder?: string;
@@ -25,7 +24,6 @@ export function TokenInput({
   onValueChange,
   selectedToken,
   onTokenSelect,
-  onTokenDeselect,
   disabled = false,
   className = "",
   placeholder = "0",

@@ -1,9 +1,7 @@
-import React from "react";
-
 export function AnimatedSun() {
   return (
     <div className="relative w-16 h-16">
-      <style jsx>{`
+      <style>{`
         @keyframes sunBreathe {
           0%,
           100% {
