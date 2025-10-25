@@ -550,7 +550,9 @@ export function LandingPage({
             size="lg"
             variant="outline"
             className="text-lg px-8 py-6"
-            onClick={() => window.open("https://forms.google.com", "_blank")}
+            onClick={() =>
+              window.open("https://form.typeform.com/to/f6r4rWzM", "_blank")
+            }
           >
             <Code className="w-5 h-5 mr-2" />
             Contact Us
