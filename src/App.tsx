@@ -223,7 +223,8 @@ function AppContent() {
     }
   }, [userBalances, selectedToken]);
 
-  const { deposit, isLoading, error, cancelTransaction } = useDeposit();
+  const { deposit, isLoading, error, cancelTransaction, isTransactionPending } =
+    useDeposit();
   const {
     withdrawInfo,
     isLoading: isWithdrawLoading,
@@ -391,7 +392,7 @@ function AppContent() {
 
   // Button text based on wallet connection state
   const getButtonText = () => {
-    if (isLoading) return "Creating BeamLink...";
+    if (isLoading || isTransactionPending) return "Creating BeamLink...";
     if (!isWalletConnected) return "Connect wallet";
     if (hasInsufficientBalance() && selectedToken) {
       return `Not enough ${selectedToken.symbol}`;
@@ -403,6 +404,10 @@ function AppContent() {
   const handleButtonClick = () => {
     if (!isWalletConnected) {
       setVisible(true);
+      return;
+    }
+    // Prevent multiple clicks while transaction is pending
+    if (isLoading || isTransactionPending) {
       return;
     }
     handleDeposit();
