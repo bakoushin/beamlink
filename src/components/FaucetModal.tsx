@@ -52,7 +52,7 @@ export function FaucetModal({ open, onOpenChange }: FaucetModalProps) {
 
             <div className="flex items-center gap-3 p-3 border rounded-lg">
               <img
-                src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Dn4noZ5jgGfkntzcQSUZ8czkreiZ1ForXYoV2H8Dm7S1/logo.png"
+                src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr/logo.png"
                 alt="EURC"
                 className="h-5 w-5 rounded-full"
               />
