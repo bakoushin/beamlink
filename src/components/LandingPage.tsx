@@ -25,6 +25,11 @@ import {
   CreditCard,
   Briefcase,
   Heart,
+  Lock,
+  Key,
+  Server,
+  ArrowDown,
+  ArrowRight as ArrowRightIcon,
 } from "lucide-react";
 import type { Token } from "@/types/token";
 import type { UserTokenBalance } from "@/queries";
@@ -87,8 +92,8 @@ export function LandingPage({
 
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
             BeamLink makes Solana token transfers as simple as sharing a link.
-            Send any token via SMS, WhatsApp, Telegram, QR code, or gift card
-            without even asking for wallet addresses.
+            Send any token via SMS, WhatsApp, Telegram, Discord, QR code, or
+            gift card — without even asking for wallet addresses.
           </p>
 
           <div className="max-w-md mx-auto mb-12" data-section="try-beamlink">
@@ -168,6 +173,26 @@ export function LandingPage({
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="p-6 rounded-lg border bg-card">
+              <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/20 rounded-lg flex items-center justify-center mb-4">
+                <Users className="w-6 h-6 text-pink-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Onboard users</h3>
+              <p className="text-muted-foreground">
+                Encode BeamLinks in QR-codes to onboard new users to your app.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-lg border bg-card">
+              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center mb-4">
+                <CreditCard className="w-6 h-6 text-orange-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Crypto Gift Cards</h3>
+              <p className="text-muted-foreground">
+                Create shareable crypto gift cards for any occasion.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-lg border bg-card">
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mb-4">
                 <Coins className="w-6 h-6 text-blue-600" />
               </div>
@@ -197,26 +222,6 @@ export function LandingPage({
               <p className="text-muted-foreground">
                 Pay remote workers and freelancers without requesting their
                 payment details.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-lg border bg-card">
-              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center mb-4">
-                <CreditCard className="w-6 h-6 text-orange-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Crypto Gift Cards</h3>
-              <p className="text-muted-foreground">
-                Create shareable crypto gift cards for any occasion.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-lg border bg-card">
-              <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/20 rounded-lg flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-pink-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Onboard users</h3>
-              <p className="text-muted-foreground">
-                Encode BeamLinks in QR-codes to onboard new users to your app.
               </p>
             </div>
 
@@ -321,6 +326,147 @@ export function LandingPage({
               <h3 className="font-semibold mb-2">QR Code</h3>
               <p className="text-sm text-muted-foreground">
                 For in-person sharing
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Technical Details */}
+      <div className="py-16 px-4 bg-muted/30">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-4">
+            Technical Details
+          </h2>
+          <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+            How BeamLink works under the hood with smart contracts and relayers
+          </p>
+
+          {/* Architecture Diagram */}
+          <div className="bg-card border rounded-xl p-8 mb-12">
+            <div className="max-w-5xl mx-auto">
+              <h3 className="text-xl font-semibold mb-8 text-center">
+                BeamLink Architecture
+              </h3>
+
+              {/* Flow Diagram */}
+              <div className="flex items-start justify-center gap-8">
+                {/* Step 1: Deposit */}
+                <div className="text-center flex-shrink-0">
+                  <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Wallet className="w-10 h-10 text-blue-600" />
+                  </div>
+                  <h4 className="text-lg font-semibold mb-2">1. Deposit</h4>
+                  <p className="text-base text-muted-foreground">
+                    User deposits tokens into escrow
+                  </p>
+                </div>
+
+                <div className="flex items-center h-20">
+                  <ArrowRightIcon className="w-8 h-8 text-muted-foreground flex-shrink-0" />
+                </div>
+
+                {/* Step 2: Link Generation */}
+                <div className="text-center flex-shrink-0">
+                  <div className="w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Key className="w-10 h-10 text-green-600" />
+                  </div>
+                  <h4 className="text-lg font-semibold mb-2">
+                    2. Link = Private Key
+                  </h4>
+                  <p className="text-base text-muted-foreground">
+                    BeamLink is a private key
+                  </p>
+                </div>
+
+                <div className="flex items-center h-20">
+                  <ArrowRightIcon className="w-8 h-8 text-muted-foreground flex-shrink-0" />
+                </div>
+
+                {/* Step 3: Relayer */}
+                <div className="text-center flex-shrink-0">
+                  <div className="w-20 h-20 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Server className="w-10 h-10 text-purple-600" />
+                  </div>
+                  <h4 className="text-lg font-semibold mb-2">
+                    3. Relayer Withdrawal
+                  </h4>
+                  <p className="text-base text-muted-foreground">
+                    Gasless withdrawal execution
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Key Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-card border rounded-lg p-6">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mb-4">
+                <Lock className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">
+                Escrow Smart Contract
+              </h3>
+              <p className="text-muted-foreground text-sm">
+                Every deposit is held securely in an escrow smart contract,
+                associated with a unique link.
+              </p>
+            </div>
+
+            <div className="bg-card border rounded-lg p-6">
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center mb-4">
+                <Key className="w-6 h-6 text-green-600" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Private Key Links</h3>
+              <p className="text-muted-foreground text-sm">
+                Each BeamLink is actually a private key used to sign
+                transactions and unlock deposits.
+              </p>
+            </div>
+
+            <div className="bg-card border rounded-lg p-6">
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center mb-4">
+                <Server className="w-6 h-6 text-purple-600" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">
+                Gasless Withdrawals
+              </h3>
+              <p className="text-muted-foreground text-sm">
+                Relayer executes withdrawals without requiring recipients to
+                have gas money.
+              </p>
+            </div>
+
+            <div className="bg-card border rounded-lg p-6">
+              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center mb-4">
+                <Coins className="w-6 h-6 text-orange-600" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">SOL for Gas</h3>
+              <p className="text-muted-foreground text-sm">
+                SOL locked for account rent is routed to withdrawers for
+                immediate gas money.
+              </p>
+            </div>
+
+            <div className="bg-card border rounded-lg p-6">
+              <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center mb-4">
+                <Zap className="w-6 h-6 text-yellow-600" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Instant Access</h3>
+              <p className="text-muted-foreground text-sm">
+                Recipients can start transacting immediately with the provided
+                gas money.
+              </p>
+            </div>
+
+            <div className="bg-card border rounded-lg p-6">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center mb-4">
+                <Shield className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Secure & Trustless</h3>
+              <p className="text-muted-foreground text-sm">
+                Withdrawals are possible even when relayer is down
               </p>
             </div>
           </div>
