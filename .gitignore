@@ -25,5 +25,9 @@ dist-ssr
 
 .env
 .env.local
+.env*.local
 
 test-ledger
+
+.vercel
+*.vercel.json.local

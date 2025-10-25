@@ -1,0 +1,13 @@
+test-ledger/
+node_modules/
+scripts/
+localnet-tokens/
+
+.env
+.env.local
+.env*.local
+
+.git/
+.gitignore
+
+README.md
