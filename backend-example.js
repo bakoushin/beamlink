@@ -220,14 +220,9 @@ app.post("/api/claim", async (req, res) => {
       });
     }
 
-    // Check if the user matches (creator is the one who can claim)
-    const userPubkey = new PublicKey(userPublicKey);
-    if (!depositAccount.creator.equals(userPubkey)) {
-      return res.status(400).json({
-        success: false,
-        error: "User does not match deposit creator",
-      });
-    }
+    // Note: We don't need to check if the user matches the creator
+    // Anyone with the deposit_id private key can claim to any recipient wallet
+    // The deposit_id keypair signature is what authorizes the claim
 
     // Validate token and amount match
     const isSolDeposit = depositAccount.mint.equals(PublicKey.default);

@@ -286,11 +286,34 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
         PROGRAM_ID
       );
 
-      // Hardcoded relayer public key (for simplicity)
-      // TODO: Fetch this from backend in production
-      const relayerPublicKey = new PublicKey(
-        "3ekMEvTXgoU9MDEviwGV93DMGMrZnhtRNyVvEJuq1Ldr"
-      );
+      // Fetch relayer public key from backend
+      let relayerPublicKey: PublicKey;
+      try {
+        const relayerResponse = await fetch(
+          `${
+            import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"
+          }/api/relayer`
+        );
+        if (relayerResponse.ok) {
+          const relayerData = await relayerResponse.json();
+          relayerPublicKey = new PublicKey(relayerData.relayerPublicKey);
+          console.log(
+            "Fetched relayer public key:",
+            relayerPublicKey.toBase58()
+          );
+        } else {
+          throw new Error("Failed to fetch relayer public key");
+        }
+      } catch (error) {
+        console.error(
+          "Failed to fetch relayer public key, using hardcoded:",
+          error
+        );
+        // Fallback to hardcoded relayer public key
+        relayerPublicKey = new PublicKey(
+          "3ekMEvTXgoU9MDEviwGV93DMGMrZnhtRNyVvEJuq1Ldr"
+        );
+      }
 
       let tx: Transaction;
 
@@ -330,6 +353,8 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
           PROGRAM_ID
         );
 
+        console.log("Vault authority:", vaultAuthority.toBase58());
+
         const vaultAta = await getAssociatedTokenAddress(
           mintAddress,
           vaultAuthority,
@@ -337,6 +362,8 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
           TOKEN_PROGRAM_ID,
           ASSOCIATED_TOKEN_PROGRAM_ID
         );
+
+        console.log("Vault ATA:", vaultAta.toBase58());
 
         const userAta = await getAssociatedTokenAddress(
           mintAddress,
@@ -346,7 +373,10 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
           ASSOCIATED_TOKEN_PROGRAM_ID
         );
 
+        console.log("User ATA:", userAta.toBase58());
+
         // Build claim instruction manually
+        // Account order according to IDL: payer, mint, vault_authority, vault_ata, deposit_id, deposit, recipient, recipient_ata, system_program, token_program, associated_token_program
         const claimInstruction = new TransactionInstruction({
           programId: PROGRAM_ID,
           keys: [
@@ -398,10 +428,21 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
       });
 
       // Serialize the partially signed transaction (relayer will complete signing)
+      console.log("Transaction before serialization:", {
+        instructions: tx.instructions.length,
+        signatures: tx.signatures.length,
+        feePayer: tx.feePayer?.toBase58(),
+        recentBlockhash: tx.recentBlockhash,
+      });
+
       const serializedTx = tx.serialize({ requireAllSignatures: false });
       const transactionBase64 = Buffer.from(serializedTx).toString("base64");
 
+      console.log("Serialized transaction length:", serializedTx.length);
+      console.log("Base64 transaction length:", transactionBase64.length);
+
       // Send partially signed transaction to backend (relayer will complete signing)
+      // Note: userPublicKey should be the recipient (current connected wallet)
       const claimRequest = {
         transaction: transactionBase64,
         depositId: depositId.toBase58(),
@@ -410,7 +451,22 @@ export function useWithdraw(privateKey?: string): UseWithdrawReturn {
         mintAddress: isSol ? undefined : withdrawInfo.token?.id,
       };
 
+      console.log("DEBUG: Claim request being sent:", {
+        depositId: depositId.toBase58(),
+        recipient: publicKey.toBase58(),
+        isSol: isSol,
+        mintAddress: claimRequest.mintAddress,
+      });
+
       console.log("Sending partially signed transaction to relayer");
+      console.log("Claim request details:", {
+        hasTransaction: !!claimRequest.transaction,
+        transactionLength: claimRequest.transaction?.length,
+        depositId: claimRequest.depositId,
+        userPublicKey: claimRequest.userPublicKey,
+        isSol: claimRequest.isSol,
+        mintAddress: claimRequest.mintAddress,
+      });
 
       const result = await requestClaim(claimRequest);
 

@@ -25,6 +25,16 @@ export async function requestClaim(
   request: ClaimRequest
 ): Promise<ClaimResponse> {
   try {
+    console.log("Sending claim request:", {
+      transaction: request.transaction
+        ? `${request.transaction.substring(0, 20)}...`
+        : "missing",
+      depositId: request.depositId,
+      userPublicKey: request.userPublicKey,
+      isSol: request.isSol,
+      mintAddress: request.mintAddress,
+    });
+
     const response = await fetch(`${API_BASE_URL}/api/claim`, {
       method: "POST",
       headers: {
