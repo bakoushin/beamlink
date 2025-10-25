@@ -44,14 +44,15 @@ function App() {
   const network = WalletAdapterNetwork.Devnet;
 
   const endpoint = useMemo(() => {
-    // const alchemyApiKey = import.meta.env.VITE_ALCHEMY_API_KEY;
-    // if (alchemyApiKey) {
-    //   return `https://solana-mainnet.g.alchemy.com/v2/${alchemyApiKey}`;
-    // }
-    // // Fallback to public RPC if no API key is provided
-    // return "https://api.mainnet-beta.solana.com";
+    if (import.meta.env.PROD) {
+      const alchemyApiKey = import.meta.env.VITE_ALCHEMY_API_KEY;
+      if (alchemyApiKey) {
+        return `https://solana-devnet.g.alchemy.com/v2/${alchemyApiKey}`;
+      }
+      // Fallback to devnet in production
+      return "https://api.devnet.solana.com";
+    }
 
-    // Use local network for development
     return "http://127.0.0.1:8899";
   }, []);
 
