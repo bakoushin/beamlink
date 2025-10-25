@@ -350,7 +350,7 @@ export function LandingPage({
               </h3>
 
               {/* Flow Diagram */}
-              <div className="flex items-start justify-center gap-8">
+              <div className="flex flex-col md:flex-row items-center md:items-start justify-center gap-4 md:gap-8">
                 {/* Step 1: Deposit */}
                 <div className="text-center flex-shrink-0">
                   <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -362,8 +362,10 @@ export function LandingPage({
                   </p>
                 </div>
 
-                <div className="flex items-center h-20">
-                  <ArrowRightIcon className="w-8 h-8 text-muted-foreground flex-shrink-0" />
+                {/* Arrow - vertical on mobile, horizontal on desktop */}
+                <div className="flex items-center justify-center h-8 w-full md:w-20 md:h-20 md:items-center">
+                  <ArrowDown className="w-8 h-8 text-muted-foreground flex-shrink-0 md:hidden" />
+                  <ArrowRightIcon className="w-8 h-8 text-muted-foreground flex-shrink-0 hidden md:block" />
                 </div>
 
                 {/* Step 2: Link Generation */}
@@ -379,8 +381,10 @@ export function LandingPage({
                   </p>
                 </div>
 
-                <div className="flex items-center h-20">
-                  <ArrowRightIcon className="w-8 h-8 text-muted-foreground flex-shrink-0" />
+                {/* Arrow - vertical on mobile, horizontal on desktop */}
+                <div className="flex items-center justify-center h-8 w-full md:w-20 md:h-20 md:items-center">
+                  <ArrowDown className="w-8 h-8 text-muted-foreground flex-shrink-0 md:hidden" />
+                  <ArrowRightIcon className="w-8 h-8 text-muted-foreground flex-shrink-0 hidden md:block" />
                 </div>
 
                 {/* Step 3: Relayer */}
