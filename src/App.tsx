@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { TransactionDialog } from "@/components/TransactionDialog";
 import { Header } from "@/components/Header";
 import { LandingPage } from "@/components/LandingPage";
+import { QRCodeModal } from "@/components/QRCodeModal";
 import {
   CheckCircle,
   Copy,
@@ -34,6 +35,7 @@ import {
   Share,
   AlertCircle,
   Check,
+  QrCode,
 } from "lucide-react";
 import type { Token } from "@/types/token";
 import type { UserTokenBalance } from "@/queries";
@@ -44,16 +46,13 @@ function App() {
   const network = WalletAdapterNetwork.Devnet;
 
   const endpoint = useMemo(() => {
-    if (import.meta.env.PROD) {
-      const alchemyApiKey = import.meta.env.VITE_ALCHEMY_API_KEY;
-      if (alchemyApiKey) {
-        return `https://solana-devnet.g.alchemy.com/v2/${alchemyApiKey}`;
-      }
-      // Fallback to devnet in production
-      return "https://api.devnet.solana.com";
+    // Always use devnet, regardless of environment
+    const alchemyApiKey = import.meta.env.VITE_ALCHEMY_API_KEY;
+    if (alchemyApiKey) {
+      return `https://solana-devnet.g.alchemy.com/v2/${alchemyApiKey}`;
     }
-
-    return "http://127.0.0.1:8899";
+    // Fallback to public devnet RPC
+    return "https://api.devnet.solana.com";
   }, []);
 
   const wallets = useMemo(
@@ -188,6 +187,7 @@ function AppContent() {
   const [isWaitingForWallet, setIsWaitingForWallet] = useState(false);
   const [claimResult, setClaimResult] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [showQRCode, setShowQRCode] = useState(false);
 
   // Update default SOL token with real price data from API when available
   useEffect(() => {
@@ -296,6 +296,7 @@ function AppContent() {
   const handleNewWithdraw = () => {
     setPrivateKey(undefined);
     setClaimResult(null);
+    setShowQRCode(false);
     // Clear the hash from URL
     window.history.replaceState(null, "", window.location.pathname);
   };
@@ -306,6 +307,7 @@ function AppContent() {
     setClaimResult(null);
     setTokenAmount("");
     setSelectedToken(defaultSolToken);
+    setShowQRCode(false);
     window.history.replaceState(null, "", window.location.pathname);
   };
 
@@ -537,6 +539,8 @@ function AppContent() {
 
     // Show withdraw interface
     if (withdrawInfo) {
+      const claimLink = window.location.href;
+
       return (
         <div className="min-h-screen flex flex-col">
           <Header onLogoClick={handleLogoClick} />
@@ -586,6 +590,17 @@ function AppContent() {
                       </div>
                     )}
                   </div>
+
+                  {/* QR Code Button - Bottom Right Corner */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowQRCode(true)}
+                    className="absolute bottom-4 right-4 flex items-center gap-2"
+                  >
+                    <QrCode className="h-4 w-4" />
+                    QR Code
+                  </Button>
                 </div>
 
                 <div className="mt-4 space-y-3">
@@ -619,6 +634,13 @@ function AppContent() {
               </div>
             </div>
           </div>
+
+          <QRCodeModal
+            open={showQRCode}
+            onOpenChange={setShowQRCode}
+            link={claimLink}
+            title="Claim Link QR Code"
+          />
         </div>
       );
     }
@@ -643,7 +665,7 @@ function AppContent() {
         <Header onLogoClick={handleLogoClick} />
         <div className="flex flex-col items-center p-8 mt-8 gap-8 flex-1 w-full">
           <div className="flex flex-col items-center gap-4 w-full max-w-md">
-            <div className="flex flex-col items-center gap-4 p-8 bg-card rounded-lg border w-full text-card-foreground">
+            <div className="flex flex-col items-center gap-4 p-8 bg-card rounded-lg border w-full text-card-foreground relative">
               <div className="relative h-20 w-20 mb-4">
                 {/* Animated rainbow circle background */}
                 <div
@@ -711,7 +733,7 @@ function AppContent() {
               </div>
 
               <div className="w-full space-y-3">
-                <div className="bg-muted/50 p-3 rounded-lg border">
+                <div className="relative bg-muted/50 p-3 rounded-lg border">
                   <div
                     className="flex items-center space-x-2 cursor-pointer hover:bg-muted rounded-lg px-3 py-2 transition-colors"
                     onClick={copyLink}
@@ -725,6 +747,14 @@ function AppContent() {
                       <Copy className="h-4 w-4 text-muted-foreground" />
                     )}
                   </div>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowQRCode(true)}
+                    className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-12 h-12 p-0"
+                  >
+                    <QrCode className="h-6 w-6" />
+                  </Button>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -754,6 +784,13 @@ function AppContent() {
             </div>
           </div>
         </div>
+
+        <QRCodeModal
+          open={showQRCode}
+          onOpenChange={setShowQRCode}
+          link={depositLink}
+          title="Share Link QR Code"
+        />
       </div>
     );
   }
