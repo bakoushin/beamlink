@@ -1,75 +1,80 @@
-# React + TypeScript + Vite
+# BeamLink — Send crypto like you send messages
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+BeamLink makes Solana token transfers as simple as sharing a link. Send SOL, USDC, or any SPL token via SMS, WhatsApp, Telegram, QR code, or gift card — no wallet address required.
 
-Currently, two official plugins are available:
+### Source code
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Frontend (this app): [https://github.com/bakoushin/beamlink](https://github.com/bakoushin/beamlink)
+- Smart Contract: [https://github.com/bakoushin/beamlink-program](https://github.com/bakoushin/beamlink-program)
 
-## React Compiler
+### How it works
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+1. **Create & send**: Deposit tokens and get a BeamLink to share (text, chat, QR, gift card).
+2. **Recipient claims**: They open the link and claim with any Solana wallet (devnet).
+3. **Done**: Tokens are securely transferred to the recipient’s wallet.
 
-Note: This will impact Vite dev & build performances.
+### Technical details
 
-## Expanding the ESLint configuration
+- **Escrow smart contract**: Each deposit is held in escrow and bound to a unique link.
+- **Link = private key**: A BeamLink acts as a private key used to authorize withdrawal.
+- **Gasless withdrawals**: A relayer can execute the claim for recipients.
+- **Gas grant**: SOL locked for account rent is routed to claimants for immediate fees.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Getting started
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Prerequisites
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- Node.js 18+ and npm
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Install
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+This starts the Vite dev server. The app is configured to use Solana devnet by default and supports Phantom, Solflare, and a burner wallet.
+
+### Build
+
+```bash
+npm run build
+```
+
+This runs TypeScript build and Vite production build.
+
+### Preview (serve the production build locally)
+
+```bash
+npm run preview
+```
+
+### Optional: Environment variables
+
+The app will use a public devnet RPC by default. To use Alchemy devnet RPC, create a `.env` file in the project root:
+
+```bash
+VITE_ALCHEMY_API_KEY=your_alchemy_api_key
+```
+
+---
+
+## Solana localnet (optional)
+
+This repository includes helper scripts for a local validator and seeded SPL token mints. The UI currently targets devnet in code; if you want to point the UI to localnet, update the endpoint in `src/App.tsx` accordingly.
+
+Available scripts:
+
+- Setup mints: `npm run localnet:setup`
+- Start validator: `npm run localnet:start`
+- Stop validator: `npm run localnet:stop`
+- Status: `npm run localnet:status`
+- Airdrop tokens: `npm run localnet:airdrop`
+- Full reset: `npm run localnet:reset`
+
+Assets for localnet (mints and accounts) live under `localnet-tokens/` and `test-ledger/`.
