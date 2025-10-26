@@ -93,39 +93,39 @@ export function useDeposit(): UseDepositReturn {
       currentTransactionRef.current = transactionId;
       pendingTransactionsRef.current.add(transactionId);
 
+      // Convert amount to proper format based on token decimals
+      const tokenDecimals = token.decimals ?? 9;
+      const depositAmount = Math.floor(
+        parseFloat(amount) * Math.pow(10, tokenDecimals)
+      );
+
+      console.log(
+        "Deposit amount:",
+        amount,
+        "Token decimals:",
+        tokenDecimals,
+        "Calculated amount:",
+        depositAmount,
+        "Type:",
+        typeof depositAmount
+      );
+
+      if (depositAmount <= 0) {
+        throw new Error("Invalid deposit amount");
+      }
+
+      // Create provider and program
+      const wallet = { publicKey, signTransaction } as any;
+      const provider = new AnchorProvider(connection, wallet, {
+        commitment: "confirmed",
+      });
+      const program = new Program(idl as any, provider);
+
+      // Generate unique deposit ID
+      const depositKeypair = new (await import("@solana/web3.js")).Keypair();
+      const depositId = depositKeypair.publicKey;
+
       try {
-        // Convert amount to proper format based on token decimals
-        const tokenDecimals = token.decimals ?? 9;
-        const depositAmount = Math.floor(
-          parseFloat(amount) * Math.pow(10, tokenDecimals)
-        );
-
-        console.log(
-          "Deposit amount:",
-          amount,
-          "Token decimals:",
-          tokenDecimals,
-          "Calculated amount:",
-          depositAmount,
-          "Type:",
-          typeof depositAmount
-        );
-
-        if (depositAmount <= 0) {
-          throw new Error("Invalid deposit amount");
-        }
-
-        // Create provider and program
-        const wallet = { publicKey, signTransaction } as any;
-        const provider = new AnchorProvider(connection, wallet, {
-          commitment: "confirmed",
-        });
-        const program = new Program(idl as any, provider);
-
-        // Generate unique deposit ID
-        const depositKeypair = new (await import("@solana/web3.js")).Keypair();
-        const depositId = depositKeypair.publicKey;
-
         const [depositPda] = PublicKey.findProgramAddressSync(
           [Buffer.from("deposit"), depositId.toBuffer()],
           PROGRAM_ID
@@ -244,15 +244,59 @@ export function useDeposit(): UseDepositReturn {
                   log.includes("Transaction simulation failed")
               );
 
-              if (isAlreadyProcessed && retryCount < maxRetries) {
-                console.warn(
-                  `Transaction already processed, retrying... (${retryCount}/${maxRetries})`
-                );
-                // Wait a bit before retrying
-                await new Promise((resolve) =>
-                  setTimeout(resolve, 1000 * retryCount)
-                );
-                continue;
+              if (isAlreadyProcessed) {
+                // Check if the transaction was actually successful on-chain
+                try {
+                  // Extract signature from error message (try multiple patterns)
+                  let signatureMatch = err.message.match(
+                    /Transaction ([A-Za-z0-9]{64,88}) resulted in an error/
+                  );
+                  if (!signatureMatch) {
+                    // Try alternative pattern for simulation errors
+                    signatureMatch = err.message.match(
+                      /Transaction ([A-Za-z0-9]{64,88})/
+                    );
+                  }
+                  if (signatureMatch) {
+                    const txSignature = signatureMatch[1];
+                    // Check if the transaction was confirmed
+                    const txStatus = await connection.getSignatureStatus(
+                      txSignature,
+                      {
+                        searchTransactionHistory: true,
+                      }
+                    );
+
+                    if (
+                      txStatus.value?.confirmationStatus &&
+                      txStatus.value.err === null
+                    ) {
+                      // Transaction was successful despite simulation error
+                      console.log(
+                        "Transaction was successful despite simulation error:",
+                        txSignature
+                      );
+                      signature = txSignature;
+                      break;
+                    }
+                  }
+                } catch (statusErr) {
+                  console.warn(
+                    "Failed to check transaction status:",
+                    statusErr
+                  );
+                }
+
+                if (retryCount < maxRetries) {
+                  console.warn(
+                    `Transaction already processed, retrying... (${retryCount}/${maxRetries})`
+                  );
+                  // Wait a bit before retrying
+                  await new Promise((resolve) =>
+                    setTimeout(resolve, 1000 * retryCount)
+                  );
+                  continue;
+                }
               }
             }
 
@@ -286,6 +330,47 @@ export function useDeposit(): UseDepositReturn {
               log.includes("This transaction has already been processed")
             )
           ) {
+            // Check if the transaction was actually successful despite the error
+            try {
+              // Extract signature from error message (try multiple patterns)
+              let signatureMatch = err.message.match(
+                /Transaction ([A-Za-z0-9]{64,88}) resulted in an error/
+              );
+              if (!signatureMatch) {
+                // Try alternative pattern for simulation errors
+                signatureMatch = err.message.match(
+                  /Transaction ([A-Za-z0-9]{64,88})/
+                );
+              }
+              if (signatureMatch) {
+                const txSignature = signatureMatch[1];
+                const txStatus = await connection.getSignatureStatus(
+                  txSignature,
+                  {
+                    searchTransactionHistory: true,
+                  }
+                );
+
+                if (
+                  txStatus.value?.confirmationStatus &&
+                  txStatus.value.err === null
+                ) {
+                  // Transaction was successful, return the result instead of throwing
+                  const result: DepositResult = {
+                    signature: txSignature,
+                    depositId: depositId.toBase58(),
+                    privateKey: bs58.encode(depositKeypair.secretKey),
+                  };
+                  return result;
+                }
+              }
+            } catch (statusErr) {
+              console.warn(
+                "Failed to check transaction status in catch block:",
+                statusErr
+              );
+            }
+
             errorMessage =
               "Transaction was already processed. Please check your wallet or try again.";
           } else if (logs.some((log) => log.includes("insufficient funds"))) {
