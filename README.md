@@ -1,6 +1,8 @@
-# BeamLink — Send crypto like you send messages
+# BeamLink — Send crypto like you send a text message
 
 BeamLink makes Solana token transfers as simple as sharing a link. Send SOL, USDC, or any SPL token via SMS, WhatsApp, Telegram, QR code, or gift card — no wallet address required.
+
+App: [https://beamlink.app](https://beamlink.app)
 
 ### Source code
 
