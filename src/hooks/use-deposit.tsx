@@ -125,6 +125,9 @@ export function useDeposit(): UseDepositReturn {
       const depositKeypair = new (await import("@solana/web3.js")).Keypair();
       const depositId = depositKeypair.publicKey;
 
+      // This will hold the computed transaction signature for error recovery
+      let txSignature: string | undefined;
+
       try {
         const [depositPda] = PublicKey.findProgramAddressSync(
           [Buffer.from("deposit"), depositId.toBuffer()],
@@ -219,6 +222,10 @@ export function useDeposit(): UseDepositReturn {
         // Send and confirm transaction with retry logic
         const signedTx = await signTransaction(tx);
 
+        // Calculate the transaction signature manually for debugging/recovery
+        txSignature = bs58.encode(signedTx.signature!);
+        console.log("Transaction signature (pre-computed):", txSignature);
+
         let signature: string;
         let retryCount = 0;
         const maxRetries = 3;
@@ -232,35 +239,69 @@ export function useDeposit(): UseDepositReturn {
                 preflightCommitment: "confirmed",
               }
             );
+            console.log("Transaction sent successfully:", signature);
             break; // Success, exit retry loop
           } catch (err) {
             retryCount++;
+            console.error(
+              "Transaction send error (attempt",
+              retryCount,
+              "):",
+              err
+            );
 
             if (err instanceof SendTransactionError) {
               const logs = err.logs || [];
-              const isAlreadyProcessed = logs.some(
-                (log) =>
-                  log.includes("This transaction has already been processed") ||
-                  log.includes("Transaction simulation failed")
-              );
+              const errorMessage = err.message || "";
+              const isAlreadyProcessed =
+                logs.some(
+                  (log) =>
+                    log.includes(
+                      "This transaction has already been processed"
+                    ) || log.includes("Transaction simulation failed")
+                ) ||
+                errorMessage.includes(
+                  "This transaction has already been processed"
+                ) ||
+                errorMessage.includes("Transaction simulation failed");
 
               if (isAlreadyProcessed) {
-                // Check if the transaction was actually successful on-chain
+                console.log(
+                  "Transaction marked as already processed, checking on-chain status..."
+                );
+                // Check if the transaction was actually successful on-chain using pre-computed signature
                 try {
-                  // Extract signature from error message (try multiple patterns)
-                  let signatureMatch = err.message.match(
-                    /Transaction ([A-Za-z0-9]{64,88}) resulted in an error/
+                  // Use the pre-computed transaction signature
+                  console.log("Checking status for signature:", txSignature);
+                  const txStatus = await connection.getSignatureStatus(
+                    txSignature,
+                    {
+                      searchTransactionHistory: true,
+                    }
                   );
-                  if (!signatureMatch) {
-                    // Try alternative pattern for simulation errors
-                    signatureMatch = err.message.match(
-                      /Transaction ([A-Za-z0-9]{64,88})/
+
+                  console.log("Transaction status:", txStatus);
+
+                  if (
+                    txStatus.value?.confirmationStatus &&
+                    txStatus.value.err === null
+                  ) {
+                    // Transaction was successful despite simulation error
+                    console.log(
+                      "Transaction was successful despite simulation error:",
+                      txSignature
                     );
-                  }
-                  if (signatureMatch) {
-                    const txSignature = signatureMatch[1];
-                    // Check if the transaction was confirmed
-                    const txStatus = await connection.getSignatureStatus(
+                    signature = txSignature;
+                    break;
+                  } else if (txStatus.value === null) {
+                    // Transaction not found yet, might still be processing
+                    console.log(
+                      "Transaction not found on-chain yet, waiting..."
+                    );
+                    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+                    // Check again after waiting
+                    const txStatus2 = await connection.getSignatureStatus(
                       txSignature,
                       {
                         searchTransactionHistory: true,
@@ -268,12 +309,11 @@ export function useDeposit(): UseDepositReturn {
                     );
 
                     if (
-                      txStatus.value?.confirmationStatus &&
-                      txStatus.value.err === null
+                      txStatus2.value?.confirmationStatus &&
+                      txStatus2.value.err === null
                     ) {
-                      // Transaction was successful despite simulation error
                       console.log(
-                        "Transaction was successful despite simulation error:",
+                        "Transaction confirmed after waiting:",
                         txSignature
                       );
                       signature = txSignature;
@@ -325,25 +365,23 @@ export function useDeposit(): UseDepositReturn {
 
         if (err instanceof SendTransactionError) {
           const logs = err.logs || [];
+          const errMessage = err.message || "";
           if (
             logs.some((log) =>
               log.includes("This transaction has already been processed")
-            )
+            ) ||
+            errMessage.includes(
+              "This transaction has already been processed"
+            ) ||
+            errMessage.includes("Transaction simulation failed")
           ) {
             // Check if the transaction was actually successful despite the error
-            try {
-              // Extract signature from error message (try multiple patterns)
-              let signatureMatch = err.message.match(
-                /Transaction ([A-Za-z0-9]{64,88}) resulted in an error/
+            if (txSignature) {
+              console.log(
+                "Checking transaction status in catch block for signature:",
+                txSignature
               );
-              if (!signatureMatch) {
-                // Try alternative pattern for simulation errors
-                signatureMatch = err.message.match(
-                  /Transaction ([A-Za-z0-9]{64,88})/
-                );
-              }
-              if (signatureMatch) {
-                const txSignature = signatureMatch[1];
+              try {
                 const txStatus = await connection.getSignatureStatus(
                   txSignature,
                   {
@@ -351,23 +389,60 @@ export function useDeposit(): UseDepositReturn {
                   }
                 );
 
+                console.log("Transaction status in catch block:", txStatus);
+
                 if (
                   txStatus.value?.confirmationStatus &&
                   txStatus.value.err === null
                 ) {
                   // Transaction was successful, return the result instead of throwing
+                  console.log("Transaction was successful, returning result");
                   const result: DepositResult = {
                     signature: txSignature,
                     depositId: depositId.toBase58(),
                     privateKey: bs58.encode(depositKeypair.secretKey),
                   };
                   return result;
+                } else if (txStatus.value === null) {
+                  // Transaction not found yet, wait and check again
+                  console.log(
+                    "Transaction not found, waiting before final check..."
+                  );
+                  await new Promise((resolve) => setTimeout(resolve, 3000));
+
+                  const txStatus2 = await connection.getSignatureStatus(
+                    txSignature,
+                    {
+                      searchTransactionHistory: true,
+                    }
+                  );
+
+                  console.log("Final transaction status check:", txStatus2);
+
+                  if (
+                    txStatus2.value?.confirmationStatus &&
+                    txStatus2.value.err === null
+                  ) {
+                    console.log(
+                      "Transaction confirmed on final check, returning result"
+                    );
+                    const result: DepositResult = {
+                      signature: txSignature,
+                      depositId: depositId.toBase58(),
+                      privateKey: bs58.encode(depositKeypair.secretKey),
+                    };
+                    return result;
+                  }
                 }
+              } catch (statusErr) {
+                console.warn(
+                  "Failed to check transaction status in catch block:",
+                  statusErr
+                );
               }
-            } catch (statusErr) {
+            } else {
               console.warn(
-                "Failed to check transaction status in catch block:",
-                statusErr
+                "Transaction signature not available for error recovery"
               );
             }
 
