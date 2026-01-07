@@ -106,10 +106,12 @@ function AppContent() {
       setPrivateKey(extractedKey);
 
       mixpanel.track("claim_page", {
+        project: "beamlink",
         referrer: document.referrer || null,
       });
     } else {
       mixpanel.track("landing_page", {
+        project: "beamlink",
         referrer: document.referrer || null,
       });
     }
@@ -248,6 +250,7 @@ function AppContent() {
     }
 
     mixpanel.track("deposit_start", {
+      project: "beamlink",
       tokenAddress: (selectedToken as any).id,
       tokenAmount,
       tokenSymbol: selectedToken.symbol,
@@ -288,6 +291,7 @@ function AppContent() {
       setSelectedToken(defaultSolToken);
 
       mixpanel.track("deposit_success", {
+        project: "beamlink",
         tokenAddress: (selectedToken as any).id,
         tokenAmount,
         tokenSymbol: selectedToken.symbol,
@@ -298,6 +302,7 @@ function AppContent() {
       // Keep form state on error so user can try again
 
       mixpanel.track("deposit_error", {
+        project: "beamlink",
         tokenAddress: (selectedToken as any).id,
         tokenAmount,
         tokenSymbol: selectedToken.symbol,
@@ -316,6 +321,7 @@ function AppContent() {
 
   const handleClaim = async () => {
     mixpanel.track("claim_start", {
+      project: "beamlink",
       tokenAddress: withdrawInfo?.token?.id,
       tokenAmount: withdrawInfo?.amount,
       tokenSymbol: withdrawInfo?.token?.symbol,
@@ -326,6 +332,7 @@ function AppContent() {
       const signature = await claim();
       setClaimResult(signature);
       mixpanel.track("claim_success", {
+        project: "beamlink",
         tokenAddress: withdrawInfo?.token?.id,
         tokenAmount: withdrawInfo?.amount,
         tokenSymbol: withdrawInfo?.token?.symbol,
@@ -334,6 +341,7 @@ function AppContent() {
     } catch (err) {
       console.error("Claim failed:", err);
       mixpanel.track("claim_success", {
+        project: "beamlink",
         tokenAddress: withdrawInfo?.token?.id,
         tokenAmount: withdrawInfo?.amount,
         tokenSymbol: withdrawInfo?.token?.symbol,
