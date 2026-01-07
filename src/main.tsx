@@ -5,9 +5,12 @@ import App from "./App.tsx";
 import { ThemeProvider } from "./components/theme-provider.tsx";
 import { Analytics } from "@vercel/analytics/react";
 import { Buffer } from "buffer";
+import { initMixpanel } from "./mixpanel.ts";
 
 // Make Buffer available globally
 globalThis.Buffer = Buffer;
+
+initMixpanel();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
