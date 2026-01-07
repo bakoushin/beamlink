@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import type { Token } from "@/types/token";
 import type { UserTokenBalance } from "@/queries";
+import mixpanel from "mixpanel-browser";
 
 function App() {
   const queryClient = new QueryClient();
@@ -103,6 +104,16 @@ function AppContent() {
     if (hash && hash.startsWith("#/") && hash.length > 2) {
       const extractedKey = hash.substring(2); // Remove '#/' prefix
       setPrivateKey(extractedKey);
+
+      mixpanel.track("claim_page", {
+        project: "beamlink",
+        referrer: document.referrer || null,
+      });
+    } else {
+      mixpanel.track("landing_page", {
+        project: "beamlink",
+        referrer: document.referrer || null,
+      });
     }
   }, []);
 
@@ -238,6 +249,14 @@ function AppContent() {
       return;
     }
 
+    mixpanel.track("deposit_start", {
+      project: "beamlink",
+      tokenAddress: (selectedToken as any).id,
+      tokenAmount,
+      tokenSymbol: selectedToken.symbol,
+      tokenName: selectedToken.name,
+    });
+
     setIsWaitingForWallet(true);
     try {
       const result = await deposit(selectedToken, tokenAmount);
@@ -270,9 +289,25 @@ function AppContent() {
       // Reset form after successful deposit
       setTokenAmount("");
       setSelectedToken(defaultSolToken);
+
+      mixpanel.track("deposit_success", {
+        project: "beamlink",
+        tokenAddress: (selectedToken as any).id,
+        tokenAmount,
+        tokenSymbol: selectedToken.symbol,
+        tokenName: selectedToken.name,
+      });
     } catch (err) {
       console.error("Deposit failed:", err);
       // Keep form state on error so user can try again
+
+      mixpanel.track("deposit_error", {
+        project: "beamlink",
+        tokenAddress: (selectedToken as any).id,
+        tokenAmount,
+        tokenSymbol: selectedToken.symbol,
+        tokenName: selectedToken.name,
+      });
     } finally {
       setIsWaitingForWallet(false);
     }
@@ -285,11 +320,33 @@ function AppContent() {
   };
 
   const handleClaim = async () => {
+    mixpanel.track("claim_start", {
+      project: "beamlink",
+      tokenAddress: withdrawInfo?.token?.id,
+      tokenAmount: withdrawInfo?.amount,
+      tokenSymbol: withdrawInfo?.token?.symbol,
+      tokenName: withdrawInfo?.token?.name,
+    });
+
     try {
       const signature = await claim();
       setClaimResult(signature);
+      mixpanel.track("claim_success", {
+        project: "beamlink",
+        tokenAddress: withdrawInfo?.token?.id,
+        tokenAmount: withdrawInfo?.amount,
+        tokenSymbol: withdrawInfo?.token?.symbol,
+        tokenName: withdrawInfo?.token?.name,
+      });
     } catch (err) {
       console.error("Claim failed:", err);
+      mixpanel.track("claim_success", {
+        project: "beamlink",
+        tokenAddress: withdrawInfo?.token?.id,
+        tokenAmount: withdrawInfo?.amount,
+        tokenSymbol: withdrawInfo?.token?.symbol,
+        tokenName: withdrawInfo?.token?.name,
+      });
     }
   };
 
